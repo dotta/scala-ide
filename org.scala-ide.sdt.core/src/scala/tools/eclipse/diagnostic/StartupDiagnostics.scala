@@ -1,31 +1,31 @@
-package scala.tools.eclipse
+package scala.tools.eclipse.diagnostic
 
-package diagnostic
-
-
-import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.dialogs.IDialogConstants
-import util.SWTUtils.asyncExec
+import scala.tools.eclipse.ScalaPlugin
 import scala.tools.eclipse.logging.HasLogger
+import scala.tools.eclipse.util.SWTUtils.asyncExec
+
+import org.eclipse.core.runtime.Plugin
+import org.eclipse.jface.dialogs.IDialogConstants
+import org.eclipse.jface.dialogs.MessageDialog
+import org.eclipse.jface.preference.IPreferenceStore
 
 object StartupDiagnostics extends HasLogger {
-  import ScalaPlugin.plugin
   
-  val INSTALLED_VERSION_KEY = plugin.pluginId + ".diagnostic.currentPluginVersion" 
-  val ASK_DIAGNOSTICS = plugin.pluginId + ".diagnostic.askOnUpgrade"
+  private val InstalledVersionKey = ScalaPlugin.plugin.pluginId + ".diagnostic.currentPluginVersion" 
+  private val AskDiagnostics = ScalaPlugin.plugin.pluginId + ".diagnostic.askOnUpgrade"
   
-  def run {   
-    val prefStore = plugin.getPreferenceStore
-    val previousVersion = prefStore.getString(INSTALLED_VERSION_KEY)
+  def run(plugin: Plugin, prefStore: IPreferenceStore) {
+    val previousVersion = prefStore.getString(InstalledVersionKey)
     val currentVersion = plugin.getBundle.getVersion.toString
-    prefStore.setDefault(ASK_DIAGNOSTICS, true)
-    val askDiagnostics = prefStore.getBoolean(ASK_DIAGNOSTICS)
+    val beforeAskDiagnostics = prefStore.getBoolean(AskDiagnostics)
+    prefStore.setDefault(AskDiagnostics, true)
+    val askDiagnostics = prefStore.getBoolean(AskDiagnostics)
     
     logger.info("startup diagnostics: previous version = " + previousVersion)
     logger.info("startup diagnostics: CURRENT version = " + currentVersion)
  
     if (previousVersion != currentVersion) {
-      prefStore.setValue(INSTALLED_VERSION_KEY, currentVersion)
+      prefStore.setValue(InstalledVersionKey, currentVersion)
       
       if (askDiagnostics) {
         asyncExec { 
@@ -37,13 +37,13 @@ object StartupDiagnostics extends HasLogger {
                 MessageDialog.QUESTION, labels, 0)
             dialog.open match {
               case 0 => // user pressed Yes
-                new DiagnosticDialog(ScalaPlugin.getShell).open
+                DiagnosticDialog(ScalaPlugin.getShell).open()
               case 2 => // user pressed Never
-                plugin.getPreferenceStore.setValue(ASK_DIAGNOSTICS, false)
+                prefStore.setValue(AskDiagnostics, false)
               case _ => // user pressed close button (-1) or No (1)
             }
             
-            ScalaPlugin.plugin.savePluginPreferences // TODO: this method is deprecated, but the solution given in the docs is unclear and is not used by Eclipse itself. -DM
+            plugin.savePluginPreferences // TODO: this method is deprecated, but the solution given in the docs is unclear and is not used by Eclipse itself. -DM
         }
       }
     }

@@ -30,7 +30,7 @@ class RunDiagnosticAction extends IObjectActionDelegate with IWorkbenchWindowAct
       action.getId match {
         case RUN_DIAGNOSTICS =>
           val shell = if (parentWindow == null) ScalaPlugin.getShell else parentWindow.getShell        
-          new diagnostic.DiagnosticDialog(shell).open
+          diagnostic.DiagnosticDialog(shell).open
         case REPORT_BUG =>
           val shell = if (parentWindow == null) ScalaPlugin.getShell else parentWindow.getShell
           new diagnostic.ReportBugDialog(shell).open

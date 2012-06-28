@@ -191,7 +191,7 @@ class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IReso
     if (!headlessMode) {
       PlatformUI.getWorkbench.getEditorRegistry.setDefaultEditor("*.scala", editorId)
       ScalaPlugin.getWorkbenchWindow map (_.getPartService().addPartListener(ScalaPlugin.this))
-      diagnostic.StartupDiagnostics.run
+      diagnostic.StartupDiagnostics.run(this, ScalaPlugin.prefStore)
     }
     ResourcesPlugin.getWorkspace.addResourceChangeListener(this, IResourceChangeEvent.PRE_CLOSE)
     JavaCore.addElementChangedListener(this)

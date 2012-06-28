@@ -19,25 +19,12 @@ import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport
 import scala.tools.eclipse.logging.LogManager
 import scala.tools.eclipse.logging.HasLogger
+import scala.tools.eclipse.diagnostic.DiagnosticDialog.HasPresenter
+import org.eclipse.ui.internal.Workbench
+import scala.tools.eclipse.diagnostic.DiagnosticDialog.Presenter
 
-class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
-
-  /* Dialog logic:
-     * if current settings do not match default settings: 
-         2) "Use other settings" is enabled
-     * if user clicks "scala defaults" then values in dialog boxes change
-         * if the user changes any of the settings
-           1) save all values
-           2) "use other settings" is enabled.
-  */
-  
-  protected val configurer = new WeavingStateConfigurer
-  
-  val heapSize = Runtime.getRuntime.maxMemory / (1024 * 1024)
-  val recommendedHeap = 1024
-  
-  protected val prefStore: IPreferenceStore = PreferenceConstants.getPreferenceStore
-  
+class DiagnosticDialog(presenter: HasPresenter, shell: Shell) extends Dialog(shell) with DiagnosticDialog.HasView {
+  import presenter.prefStore
   // keep track of whether we are programmatically updating a field, in which case the listeners ignore the event
   // a horrible hack, but I think the only alternative is to use the (heavyweight) jface data binding mechanism -DM
   protected var updating = false 
@@ -51,7 +38,6 @@ class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
   
   protected var boldFont: Font = null
     
-//  protected val markOccurrencesData = new BoolWidgetData(PreferenceConstants.EDITOR_MARK_OCCURRENCES, false)
   protected val completionData = new BoolWidgetData("", true) {      
     val scalaCompletion = "org.scala-ide.sdt.core.scala_completions"
     val scalaJavaCompletion = "org.scala-ide.sdt.core.scala_java_completions"
@@ -151,9 +137,9 @@ class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
     
     val weavingGroup = newGroup("JDT Weaving", control)    
     this.weavingButton = newCheckboxButton(weavingGroup, "Enable JDT weaving (required for Scala plugin)")
-    weavingButton.setSelection(configurer.isWeaving)
-    weavingButton.setEnabled(!configurer.isWeaving) // disable the control if weaving is already enabled
-    if (!configurer.isWeaving) {
+    weavingButton.setSelection(presenter.isWeavingEnabled)
+    weavingButton.setEnabled(!presenter.isWeavingEnabled) // disable the control if weaving is already enabled
+    if (!presenter.isWeavingEnabled) {
       new Label(weavingGroup, SWT.LEFT).setText("Note: change will take effect after workbench restart")
     }
 
@@ -204,12 +190,12 @@ class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
     heapGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true))
     heapGroup.setLayout(new GridLayout(1, true))
     
-    new Label(heapGroup, SWT.LEFT).setText("Current maximum heap size: " + heapSize + "M")
+    new Label(heapGroup, SWT.LEFT).setText("Current maximum heap size: " + presenter.model.heapSize + "M")
     
-    if (heapSize < recommendedHeap) {
+    if (presenter.isUserHeapSizeNotOk) {
       // create the warning label 
       val warningLabel = new Label(heapGroup, SWT.LEFT)
-      warningLabel.setText("Warning: recommended value is at least " + recommendedHeap + "M")
+      warningLabel.setText("Warning: recommended value is at least " + presenter.model.recommendedHeap + "M")
 
       // set the font to bold
       val currentFont = warningLabel.getFont
@@ -286,7 +272,7 @@ class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
     button
   }
   
-  def doEnableDisable() {
+  private def doEnableDisable() {
     val selected = autoActivationButton.getSelection        
     if (!selected && errorMessageField.getData.asInstanceOf[Boolean]) {
       delayText.setText("")
@@ -329,41 +315,35 @@ class DiagnosticDialog(shell: Shell) extends Dialog(shell) {
     }    
   }
   
-  override def okPressed {
+  override def okPressed(): Unit = {
     widgetDataList foreach { _.saveToStore }
-    val doEnableWeaving = weavingButton.getSelection && !configurer.isWeaving
     super.okPressed
-    if (doEnableWeaving)
-      turnWeavingOn()
+    presenter.applyChanges()
   }
   
-  override def close: Boolean = {
-    if (boldFont != null) 
-      boldFont.dispose
+  override def close(): Boolean = {
+    if (boldFont != null) boldFont.dispose
     super.close
   }
   
-  def turnWeavingOn() {
-//    JDTWeavingPreferences.setAskToEnableWeaving(false)
-    
-    val changeResult: IStatus = configurer.changeWeavingState(true)    
-    
-    if (changeResult.getSeverity <= IStatus.WARNING) {
-      val note = 
-        if (changeResult.getSeverity == IStatus.WARNING)
-          "\n\n(Note: weaving status changed, but there were warnings. See the error log for more details.)"
-        else ""
-      val restart = MessageDialog.openQuestion(shell, "Restart Eclipse?",
-          "Weaving will be enabled only after restarting the workbench.\n\nRestart now?" + note)
-      if (restart)
-        PlatformUI.getWorkbench.restart      
-    } else {
-      showFailureDialog(changeResult)
-    }
-  }  
+  override def isWeavingButtonEnabled(): Boolean = weavingButton.getSelection
+
+  override def askToRestartEclipse(status: IStatus): Boolean = {
+    val note = 
+      if (status.getSeverity == IStatus.WARNING)
+        "\n\n(Note: weaving status changed, but there were warnings. See the error log for more details.)"
+      else 
+        ""
+            
+    MessageDialog.openQuestion(shell, "Restart Eclipse?", "Weaving will be enabled only after restarting the workbench.\n\nRestart now?" + note)
+  }
   
-  def showFailureDialog(result: IStatus) {
-    val changeInstructions =     
+  override def showFailureDialog(status: IStatus): Unit =
+    ErrorDialog.openError(shell, "Error enabling JDT weaving", DiagnosticDialog.WeavingFailureChangeInstruction, status)
+}
+
+object DiagnosticDialog {
+   private final val WeavingFailureChangeInstruction =     
 """Error: could not enable JDT weaving (see detail below).
 
 To turn on JDT aspect weaving manually:
@@ -374,11 +354,7 @@ To turn on JDT aspect weaving manually:
 
 To disable JDT weaving manually, remove "org.eclipse.equinox.weaving.hook" or the entire line "osgi.framework.extensions" as applicable.
 """
-    ErrorDialog.openError(shell, "Error enabling JDT weaving", changeInstructions, result);    
-  }
-}
 
-object DiagnosticDialog {
   /** Returns either an error message or the integer value of `number` */
   def getIntOrError(number: String): Either[String, Int] = {
     if (number.isEmpty) {
@@ -405,4 +381,80 @@ object DiagnosticDialog {
       }
     }  
   }
+
+  def apply(shell: Shell): IsDialog = {
+    val model = new Model
+    val presenter = new Presenter(model) {
+      override val view: HasView = new DiagnosticDialog(this, shell)
+    }
+    presenter
+  }
+  
+  trait IsDialog {
+    def open(): Int
+  }
+  
+  class Model {
+    val heapSize: Long = Runtime.getRuntime.maxMemory / (1024 * 1024)
+    val recommendedHeap: Int = 1024
+  }
+  
+  abstract class Presenter(override val model: Model) extends HasPresenter with IsDialog {
+
+    protected def view: HasView
+
+    /* Dialog logic:
+     * if current settings do not match default settings: 
+     *   2) "Use other settings" is enabled
+     * if user clicks "scala defaults" then values in dialog boxes change
+     * if the user changes any of the settings
+     *   1) save all values
+     *   2) "use other settings" is enabled.
+     */
+    private  val weavingState = new WeavingStateConfigurer
+    override val prefStore: IPreferenceStore = PreferenceConstants.getPreferenceStore
+
+    override def isWeavingEnabled(): Boolean = weavingState.isWeaving
+    
+    def isUsingDefaultSettings: Boolean = {
+      false
+    }
+    
+    override def isUserHeapSizeOk: Boolean = model.heapSize < model.recommendedHeap
+    
+    override def applyChanges(): Unit = {
+      val doEnableWeaving = view.isWeavingButtonEnabled && !isWeavingEnabled
+      turnWeavingOn()
+    }
+    
+    private def turnWeavingOn(): Unit = {
+      val status = weavingState.changeWeavingState(true)    
+
+      if (status.getSeverity <= IStatus.WARNING) {
+        val restart = view.askToRestartEclipse(status)
+        if (restart)
+          Workbench.getInstance.restart()      
+      } 
+      else view.showFailureDialog(status)
+    }
+    
+    override def open(): Int = view.open()
+  }
+  
+  trait HasPresenter {
+    def model: Model
+    def isWeavingEnabled(): Boolean
+    def applyChanges(): Unit
+    def prefStore: IPreferenceStore
+    def isUserHeapSizeOk: Boolean
+    def isUserHeapSizeNotOk: Boolean = !isUserHeapSizeOk
+  }
+  
+  trait HasView extends IsDialog {
+    def askToRestartEclipse(status: IStatus): Boolean
+    def isWeavingButtonEnabled(): Boolean
+    //def setWeavingPanel(enabled: Boolean): Unit
+    def showFailureDialog(status: IStatus): Unit
+  }
+
 }
