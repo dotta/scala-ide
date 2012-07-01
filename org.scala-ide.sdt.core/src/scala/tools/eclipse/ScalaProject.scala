@@ -5,42 +5,23 @@
 
 package scala.tools.eclipse
 
+import java.io.File.pathSeparator
+
 import scala.collection.immutable
 import scala.collection.mutable
-import java.io.File.pathSeparator
-import org.eclipse.core.resources.{ IContainer, IFile, IFolder, IMarker, IProject, IResource, IResourceProxy, IResourceProxyVisitor }
-import org.eclipse.core.runtime.{ FileLocator, IPath, IProgressMonitor, Path, SubMonitor }
-import org.eclipse.jdt.core.{ IClasspathEntry, IJavaProject, JavaCore, ICompilationUnit }
-import org.eclipse.jdt.core.compiler.IProblem
-import org.eclipse.jdt.internal.core.JavaProject
-import org.eclipse.jdt.internal.core.util.Util
-import org.eclipse.swt.widgets.{ Display, Shell }
-import scala.tools.nsc.{ Settings, MissingRequirementError }
-import scala.tools.nsc.util.SourceFile
 import scala.tools.eclipse.javaelements.ScalaCompilationUnit
-import scala.tools.eclipse.properties.PropertyStore
-import scala.tools.eclipse.util.{ Cached, EclipseResource, OSGiUtils, ReflectionUtils, EclipseUtils }
-import scala.tools.eclipse.properties.IDESettings
-import util.SWTUtils.asyncExec
-import EclipseUtils.workspaceRunnableIn
-import scala.tools.eclipse.properties.CompilerSettings
 import scala.tools.eclipse.logging.HasLogger
-import scala.collection.mutable.ListBuffer
-import scala.actors.Actor
-import org.eclipse.jdt.core.IJarEntryResource
-import java.util.Properties
-import org.eclipse.jdt.core.IPackageFragmentRoot
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Status
-import scala.tools.eclipse.util.Utils
-import org.eclipse.jdt.core.IJavaModelMarker
-import scala.tools.eclipse.util.FileUtils
+import scala.tools.eclipse.properties.{CompilerSettings, IDESettings, PropertyStore}
+import scala.tools.eclipse.util.{Cached, EclipseResource, Trim, Utils}
+import scala.tools.eclipse.util.EclipseUtils.workspaceRunnableIn
+import scala.tools.eclipse.util.SWTUtils.asyncExec
+import scala.tools.nsc.{Settings, MissingRequirementError}
 import scala.tools.nsc.util.BatchSourceFile
-import java.io.InputStream
-import java.io.InputStreamReader
-import scala.tools.eclipse.util.Trim
-import org.eclipse.jdt.launching.JavaRuntime
+import scala.tools.nsc.util.SourceFile
+
+import org.eclipse.core.resources.{IContainer, IFile, IMarker, IProject, IResource, IResourceProxy, IResourceProxyVisitor}
+import org.eclipse.core.runtime.{IPath, IProgressMonitor, Path, SubMonitor}
+import org.eclipse.jdt.core.{IClasspathEntry, IJavaProject, JavaCore}
 import org.eclipse.jdt.internal.core.util.Util
 
 trait BuildSuccessListener {
