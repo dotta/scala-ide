@@ -297,7 +297,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
     sourceFiles
   }
   
-  private def cleanOutputFolders(implicit monitor: IProgressMonitor) = {
+  private def cleanOutputFolders(monitor: IProgressMonitor): Unit = {
     def delete(container: IContainer, deleteDirs: Boolean)(f: String => Boolean): Unit =
       if (container.exists()) {
         container.members.foreach {
@@ -556,13 +556,13 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
     buildListeners remove listener
   }
 
-  def clean(implicit monitor: IProgressMonitor) = {
+  def clean(monitor: IProgressMonitor): Unit = {
     clearAllBuildProblemMarkers()
     resetClasspathCheck()
     
     if (buildManager0 != null)
       buildManager0.clean(monitor)
-    cleanOutputFolders
+    cleanOutputFolders(monitor)
     resetCompilers // reset them only after the output directory is emptied
   }
 

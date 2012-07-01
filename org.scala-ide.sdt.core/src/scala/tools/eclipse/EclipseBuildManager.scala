@@ -26,5 +26,5 @@ trait EclipseBuildManager extends BuildManager {
   @volatile var hasErrors: Boolean = false
   
   def invalidateAfterLoad: Boolean
-  def clean(implicit monitor: IProgressMonitor): Unit
+  def clean(monitor: IProgressMonitor): Unit
 }

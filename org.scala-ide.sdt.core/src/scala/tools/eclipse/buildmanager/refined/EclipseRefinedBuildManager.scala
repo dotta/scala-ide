@@ -134,7 +134,7 @@ class EclipseRefinedBuildManager(project: ScalaProject, settings0: Settings)
     }
   }
 
-  def clean(implicit monitor: IProgressMonitor) {
+  def clean(monitor: IProgressMonitor) {
     depFile.delete(true, false, monitor)
   }
 

@@ -219,7 +219,7 @@ class EclipseSbtBuildManager(val project: ScalaProject, settings0: Settings)
   /** Not supported */
   def saveTo(file: AbstractFile, fromFile: AbstractFile => String) {}
 	
-  def clean(implicit monitor: IProgressMonitor) {
+  def clean(monitor: IProgressMonitor) {
     val cacheLocation = ScalaCompilerConf.cacheLocation(project.underlying)
     cacheLocation.refreshLocal(IResource.DEPTH_ZERO, null)
     cacheLocation.delete(true, false, monitor)
