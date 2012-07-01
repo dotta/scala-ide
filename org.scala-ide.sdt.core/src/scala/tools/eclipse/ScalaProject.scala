@@ -119,7 +119,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
     logger.debug("failedCompilerInitialization: " + msg)
     import org.eclipse.jface.dialogs.MessageDialog
     synchronized {
-      if (!ScalaPlugin.plugin.headlessMode && !messageShowed) {
+      if (!plugin.headlessMode && !messageShowed) {
         messageShowed = true
         asyncExec {
           val doAdd = MessageDialog.openQuestion(ScalaPlugin.getShell, "Add Scala library to project classpath?", 
@@ -136,26 +136,29 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       }
     }
   }
-
-  override def toString = underlying.getName
   
   /** Does this project have the Scala nature? */
-  def hasScalaNature = 
-    ScalaPlugin.plugin.isScalaProject(underlying)
+  def hasScalaNature: Boolean = plugin.isScalaProject(underlying)
   
-  def settingsError(severity: Int, msg: String, monitor: IProgressMonitor) =
+  private def settingsError(severity: Int, msg: String, monitor: IProgressMonitor): Unit =
     workspaceRunnableIn(underlying.getWorkspace, monitor) { m =>
       val mrk = underlying.createMarker(plugin.settingProblemMarkerId)
       mrk.setAttribute(IMarker.SEVERITY, severity)
       mrk.setAttribute(IMarker.MESSAGE, msg)
     }
 
-  def clearBuildErrors() =
+  /** Deletes the build problem marker associated to {{{this}}} Scala project. */
+  private def clearBuildProblemMarker(): Unit = 
     workspaceRunnableIn(underlying.getWorkspace) { m =>
       underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_ZERO)
     }
+ 
+  /** Deletes all build problem markers for all resources in {{{this}}} Scala project. */
+  private def clearAllBuildProblemMarkers(): Unit = {
+    underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
+  }
 
-  def clearSettingsErrors() =
+  private def clearSettingsErrors(): Unit =
     workspaceRunnableIn(underlying.getWorkspace) { m =>
       underlying.deleteMarkers(plugin.settingProblemMarkerId, true, IResource.DEPTH_ZERO)
     }
@@ -173,10 +176,8 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
    *     
    *  transitiveDependencies(C) = {A, B} iff B *exports* the A project in its classpath
    */
-  def transitiveDependencies: Seq[IProject] = {
-    import ScalaPlugin.plugin
+  def transitiveDependencies: Seq[IProject] =
     directDependencies ++ (directDependencies flatMap (p => plugin.getScalaProject(p).exportedDependencies))
-  }
   
   /** Return the exported dependencies of this project. An exported dependency is
    *  another project this project depends on, and which is exported to downstream
@@ -185,12 +186,10 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   def exportedDependencies: Seq[IProject] = {
     for { entry <- javaProject.getRawClasspath
           if entry.getEntryKind == IClasspathEntry.CPE_PROJECT && entry.isExported
-    } yield ScalaPlugin.plugin.workspaceRoot.getProject(entry.getPath().toString)
+    } yield plugin.workspaceRoot.getProject(entry.getPath().toString)
   }
     
-  lazy val javaProject: IJavaProject = {
-    JavaCore.create(underlying)
-  }
+  lazy val javaProject: IJavaProject = JavaCore.create(underlying)
 
   def sourceFolders: Seq[IPath] = {
     for {
@@ -219,7 +218,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       val cpeOutput = cpe.getOutputLocation
       val outputLocation = if (cpeOutput != null) cpeOutput else javaProject.getOutputLocation
 
-      val wsroot = ScalaPlugin.plugin.workspaceRoot
+      val wsroot = plugin.workspaceRoot
       val binPath = wsroot.getFolder(outputLocation)  // may not exist
       val srcContainer = Option(wsroot.findMember(cpe.getPath()).asInstanceOf[IContainer]) getOrElse {
         // may be null if source folder does not exist
@@ -279,7 +278,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
     for {
       srcEntry <- javaProject.getResolvedClasspath(true)
       if srcEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE
-      srcFolder = ScalaPlugin.plugin.workspaceRoot.findMember(srcEntry.getPath()) 
+      srcFolder = plugin.workspaceRoot.findMember(srcEntry.getPath()) 
       if srcFolder ne null
     } {
       val inclusionPatterns = fullPatternChars(srcEntry, srcEntry.getInclusionPatterns())
@@ -361,7 +360,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       res.refreshLocal(IResource.DEPTH_INFINITE, null)
   }
   
-  def initialize(settings: Settings, filter: Settings#Setting => Boolean) = {
+  def initialize(settings: Settings, filter: Settings#Setting => Boolean): Unit = {
     // if the workspace project doesn't exist, it is a virtual project used by Eclipse.
     // As such the source folders don't exist.
     if (underlying.exists()) {
@@ -495,7 +494,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       false
     }
 
-  def buildManager = {
+  def buildManager: EclipseBuildManager = {
     if (buildManager0 == null) {
       val settings = ScalaPlugin.defaultScalaSettings(msg => settingsError(IMarker.SEVERITY_ERROR, msg, null))
       clearSettingsErrors()
@@ -515,7 +514,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       	  logger.info("BM: Refined Build Manager")
       	  buildManager0 = new buildmanager.refined.EclipseRefinedBuildManager(this, settings)
       	case "sbt"  =>
-      	  logger.info("BM: SBT enhanced Build Manager for " + ScalaPlugin.plugin.scalaVer + " Scala library")
+      	  logger.info("BM: SBT enhanced Build Manager for " + plugin.scalaVer + " Scala library")
       	  buildManager0 = new buildmanager.sbtintegration.EclipseSbtBuildManager(this, settings)
       	case _         =>
       	  logger.info("Invalid build manager choice '" + choice  + "'. Setting to (default) refined build manager")
@@ -536,7 +535,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
 
     hasBeenBuilt = true
 
-    clearBuildErrors
+    clearBuildProblemMarker()
     buildManager.build(addedOrUpdated, removed, monitor)
     refreshOutput
 
@@ -560,8 +559,8 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   def resetDependentProjects() {
     for {
       prj <- underlying.getReferencingProjects()
-      if prj.isOpen() && ScalaPlugin.plugin.isScalaProject(prj)
-      dependentScalaProject <- ScalaPlugin.plugin.asScalaProject(prj)
+      if prj.isOpen() && plugin.isScalaProject(prj)
+      dependentScalaProject <- plugin.asScalaProject(prj)
     } {
       logger.debug("[%s] Reset PC of referring project %s".format(this, dependentScalaProject))
       dependentScalaProject.resetPresentationCompiler()
@@ -577,7 +576,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   }
 
   def clean(implicit monitor: IProgressMonitor) = {
-    underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
+    clearAllBuildProblemMarkers()
     resetClasspathCheck()
     
     if (buildManager0 != null)
@@ -639,4 +638,6 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
         compiler.compilationUnits.foreach(_.scheduleReconcile())
     }(Nil)
   }
+
+  override def toString: String = underlying.getName
 }
