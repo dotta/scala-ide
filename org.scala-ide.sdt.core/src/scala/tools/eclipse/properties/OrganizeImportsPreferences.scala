@@ -38,7 +38,7 @@ class OrganizeImportsPreferencesPage extends PropertyPage with IWorkbenchPrefere
   }
 
   private def initUnderlyingPreferenceStore() {
-    val pluginId = ScalaPlugin.plugin.pluginId
+    val pluginId = ScalaPlugin.pluginId
     val scalaPrefStore = ScalaPlugin.prefStore
     setPreferenceStore(getElement match {
       case project: IProject => new PropertyStore(project, scalaPrefStore, pluginId)
@@ -193,7 +193,7 @@ object OrganizeImportsPreferences extends Enumeration {
 
   private def getPreferenceStore(project: IProject): IPreferenceStore = {
     val workspaceStore = ScalaPlugin.prefStore
-    val projectStore = new PropertyStore(project, workspaceStore, ScalaPlugin.plugin.pluginId)
+    val projectStore = new PropertyStore(project, workspaceStore, ScalaPlugin.pluginId)
     val useProjectSettings = projectStore.getBoolean(USE_PROJECT_SPECIFIC_SETTINGS_KEY)
     val prefStore = if (useProjectSettings) projectStore else ScalaPlugin.prefStore
     prefStore
@@ -222,7 +222,7 @@ class OrganizeImportsPreferencesInitializer extends AbstractPreferenceInitialize
   def initializeDefaultPreferences() : Unit = {
     
     Utils.tryExecute {
-      val node = new DefaultScope().getNode(ScalaPlugin.plugin.pluginId)
+      val node = new DefaultScope().getNode(ScalaPlugin.pluginId)
       node.put(OrganizeImportsPreferences.groupsKey, "java$scala$org$com")      
       node.put(OrganizeImportsPreferences.wildcardsKey, "scalaz$scalaz.Scalaz")      
       node.put(OrganizeImportsPreferences.expandCollapseKey, OrganizeImportsPreferences.ExpandImports.toString)      

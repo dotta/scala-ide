@@ -49,6 +49,16 @@ trait MarkerFactory {
     (createMarkerWithAttributes(severity, msg) andThen withPos(pos))(resource)
   }
 
+  /** Delete all markers on the given resource, but not any of its members. */
+  def delete(resource: IResource): Unit = delete(resource, IResource.DEPTH_ZERO)
+
+  /** Delete all markers on the given resource, and its direct and indirect members at any depth. */
+  def deleteAll(resource: IResource): Unit = delete(resource, IResource.DEPTH_INFINITE)
+
+  private def delete(resource: IResource, depth: Int): Unit = runInWorkspace(resource) { _ =>
+    resource.deleteMarkers(markerId, /* includeSubtypes = */ true, depth)
+  }
+
   private def createMarkerWithAttributes(severity: Int, msg: String): IResource => IMarker =
     resource => (createMarker andThen update(severity, msg))(resource)
 

@@ -96,7 +96,7 @@ class CompilerSettings extends PropertyPage with IWorkbenchPreferencePage with E
   }
 
   /** Returns the id of what preference page we use */
-  def getPageId = ScalaPlugin.plugin.pluginId
+  def getPageId = ScalaPlugin.pluginId
 
   import EclipseSetting.toEclipseBox
   /** The settings we can change */

@@ -43,6 +43,8 @@ object ScalaPlugin {
   private final val HeadlessTest  = "sdtcore.headless"
 
   @volatile var plugin: ScalaPlugin = _
+
+  @inline def pluginId = "org.scala-ide.sdt.core"
   
   def prefStore = plugin.getPreferenceStore
   
@@ -71,7 +73,8 @@ object ScalaPlugin {
 }
 
 class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IResourceChangeListener with IElementChangedListener with PartAdapter with HasLogger {
-  def pluginId = "org.scala-ide.sdt.core"
+  import ScalaPlugin.pluginId
+
   def compilerPluginId = "org.scala-ide.scala.compiler"
   def libraryPluginId = "org.scala-ide.scala.library"
   def sbtPluginId = "org.scala-ide.sbt.full.library"
@@ -97,7 +100,6 @@ class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IReso
   def launchTypeId = "scala.application"
   def problemMarkerId = pluginId + ".problem"
   def classpathProblemMarkerId = pluginId + ".classpathProblem"
-  def settingProblemMarkerId = pluginId + ".settingProblem"
 
   // Retained for backwards compatibility
   val oldPluginId = "ch.epfl.lamp.sdt.core"

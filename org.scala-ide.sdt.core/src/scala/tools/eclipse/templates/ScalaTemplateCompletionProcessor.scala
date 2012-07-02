@@ -20,8 +20,8 @@ import org.eclipse.ui.editors.text.templates.ContributionTemplateStore
  */
 class ScalaTemplateManager {
 
-  val CONTEXT_TYPE = ScalaPlugin.plugin.pluginId + ".templates"
-  val TEMPLATE_STORE_ID = ScalaPlugin.plugin.pluginId + ".preferences.Templates"
+  val CONTEXT_TYPE = ScalaPlugin.pluginId + ".templates"
+  val TEMPLATE_STORE_ID = ScalaPlugin.pluginId + ".preferences.Templates"
     
   lazy val templateStore = {
     val b = new ContributionTemplateStore(contextTypeRegistry, ScalaPlugin.prefStore, TEMPLATE_STORE_ID)

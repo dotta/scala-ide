@@ -1,20 +1,20 @@
-package scala.tools.eclipse
+package scala.tools.eclipse.diagnostic
 
-package diagnostic
+import scala.tools.eclipse.ScalaPlugin
+import scala.tools.eclipse.contribution.weaving.jdt.configuration.WeavingStateConfigurer
+import scala.tools.eclipse.logging.HasLogger
+import scala.tools.eclipse.util.SWTUtils.asyncExec
 
+import org.eclipse.jface.dialogs.IDialogConstants
 
 import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.dialogs.IDialogConstants
-import util.SWTUtils.asyncExec
-import scala.tools.eclipse.logging.HasLogger
-import scala.tools.eclipse.contribution.weaving.jdt.configuration.WeavingStateConfigurer
 import org.eclipse.ui.PlatformUI
 
 object StartupDiagnostics extends HasLogger {
   import ScalaPlugin.plugin
   
-  private val INSTALLED_VERSION_KEY = plugin.pluginId + ".diagnostic.currentPluginVersion" 
-  private val ASK_DIAGNOSTICS = plugin.pluginId + ".diagnostic.askOnUpgrade"
+  private val INSTALLED_VERSION_KEY = ScalaPlugin.pluginId + ".diagnostic.currentPluginVersion" 
+  private val ASK_DIAGNOSTICS = ScalaPlugin.pluginId + ".diagnostic.askOnUpgrade"
   
   private val weavingState = new WeavingStateConfigurer
   

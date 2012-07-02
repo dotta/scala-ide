@@ -220,7 +220,7 @@ class FormatterPreferencePage extends PropertyPage with IWorkbenchPreferencePage
   }
 
   private def initUnderlyingPreferenceStore() {
-    val pluginId = ScalaPlugin.plugin.pluginId
+    val pluginId = ScalaPlugin.pluginId
     val scalaPrefStore = ScalaPlugin.prefStore
     setPreferenceStore(getElement match {
       case project: IProject => new PropertyStore(project, scalaPrefStore, pluginId)

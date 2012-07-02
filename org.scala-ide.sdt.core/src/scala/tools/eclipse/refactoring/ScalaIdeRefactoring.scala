@@ -132,7 +132,7 @@ abstract class ScalaIdeRefactoring(val getName: String, val file: ScalaSourceFil
           EditorHelpers.createTextFileChange(file, fileChanges)
         } getOrElse {
           val msg = "Could not find the corresponding IFile for "+ file.path
-          throw new CoreException(new Status(IStatus.ERROR, ScalaPlugin.plugin.pluginId, 0, msg, null))
+          throw new CoreException(new Status(IStatus.ERROR, ScalaPlugin.pluginId, 0, msg, null))
         }
     }
   }
@@ -177,6 +177,6 @@ abstract class ScalaIdeRefactoring(val getName: String, val file: ScalaSourceFil
   }
   
   def fail(msg: String = "Could not get the source file."): Nothing = {
-    throw new CoreException(new Status(IStatus.ERROR, ScalaPlugin.plugin.pluginId, msg))
+    throw new CoreException(new Status(IStatus.ERROR, ScalaPlugin.pluginId, msg))
   }
 }

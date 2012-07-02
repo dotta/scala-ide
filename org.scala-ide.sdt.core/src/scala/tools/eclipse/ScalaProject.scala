@@ -6,7 +6,6 @@
 package scala.tools.eclipse
 
 import java.io.File.pathSeparator
-
 import scala.collection.immutable
 import scala.collection.mutable
 import scala.tools.eclipse.javaelements.ScalaCompilationUnit
@@ -18,11 +17,11 @@ import scala.tools.eclipse.util.SWTUtils.asyncExec
 import scala.tools.nsc.{Settings, MissingRequirementError}
 import scala.tools.nsc.util.BatchSourceFile
 import scala.tools.nsc.util.SourceFile
-
 import org.eclipse.core.resources.{IContainer, IFile, IMarker, IProject, IResource, IResourceProxy, IResourceProxyVisitor}
 import org.eclipse.core.runtime.{IPath, IProgressMonitor, Path, SubMonitor}
 import org.eclipse.jdt.core.{IClasspathEntry, IJavaProject, JavaCore}
 import org.eclipse.jdt.internal.core.util.Util
+import scala.tools.eclipse.buildmanager.BuildProblemMarker
 
 trait BuildSuccessListener {
   def buildSuccessful(): Unit
@@ -120,30 +119,6 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   
   /** Does this project have the Scala nature? */
   def hasScalaNature: Boolean = plugin.isScalaProject(underlying)
-  
-  private def settingsError(severity: Int, msg: String, monitor: IProgressMonitor): Unit =
-    workspaceRunnableIn(underlying.getWorkspace, monitor) { m =>
-      val mrk = underlying.createMarker(plugin.settingProblemMarkerId)
-      mrk.setAttribute(IMarker.SEVERITY, severity)
-      mrk.setAttribute(IMarker.MESSAGE, msg)
-    }
-
-  /** Deletes the build problem marker associated to {{{this}}} Scala project. */
-  private def clearBuildProblemMarker(): Unit = 
-    workspaceRunnableIn(underlying.getWorkspace) { m =>
-      underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_ZERO)
-    }
- 
-  /** Deletes all build problem markers for all resources in {{{this}}} Scala project. */
-  private def clearAllBuildProblemMarkers(): Unit = {
-    underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
-  }
-
-  private def clearSettingsErrors(): Unit =
-    workspaceRunnableIn(underlying.getWorkspace) { m =>
-      underlying.deleteMarkers(plugin.settingProblemMarkerId, true, IResource.DEPTH_ZERO)
-    }
-
   
   /** The direct dependencies of this project. */
   def directDependencies: Seq[IProject] = 
@@ -402,7 +377,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   
   def storage = {
     val workspaceStore = ScalaPlugin.prefStore
-    val projectStore = new PropertyStore(underlying, workspaceStore, plugin.pluginId)
+    val projectStore = new PropertyStore(underlying, workspaceStore, ScalaPlugin.pluginId)
     val useProjectSettings = projectStore.getBoolean(SettingConverterUtil.USE_PROJECT_SETTINGS_PREFERENCE)
 
     if (useProjectSettings) projectStore else workspaceStore
@@ -477,8 +452,8 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
 
   def buildManager: EclipseBuildManager = {
     if (buildManager0 == null) {
-      val settings = ScalaPlugin.defaultScalaSettings(msg => settingsError(IMarker.SEVERITY_ERROR, msg, null))
-      clearSettingsErrors()
+      val settings = ScalaPlugin.defaultScalaSettings(msg => SettingProblemMarker.create(underlying, IMarker.SEVERITY_ERROR, msg))
+      SettingProblemMarker.delete(underlying)
       initialize(settings, _ => true)
       // source path should be emtpy. The build manager decides what files get recompiled when.
       // if scalac finds a source file newer than its corresponding classfile, it will 'compileLate'
@@ -516,7 +491,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
 
     hasBeenBuilt = true
 
-    clearBuildProblemMarker()
+    BuildProblemMarker.delete(underlying)
     buildManager.build(addedOrUpdated, removed, monitor)
     refreshOutput
 
@@ -557,7 +532,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   }
 
   def clean(monitor: IProgressMonitor): Unit = {
-    clearAllBuildProblemMarkers()
+    BuildProblemMarker.deleteAll(underlying)
     resetClasspathCheck()
     
     if (buildManager0 != null)
