@@ -53,12 +53,6 @@ object FileUtils {
       -1
   }
   
-  def clearBuildErrors(file : IFile, monitor : IProgressMonitor) =
-    try {
-      workspaceRunnableIn(file.getWorkspace, monitor)( m => file.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE))
-    } catch {
-      case _ : ResourceException =>
-    }
   
   def clearTasks(file : IFile, monitor : IProgressMonitor) =
     try {
@@ -66,12 +60,6 @@ object FileUtils {
     } catch {
       case _ : ResourceException =>
     }
-  
-  def findBuildErrors(file : IResource) : Seq[IMarker] =
-    file.findMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
-
-  def hasBuildErrors(file : IResource) : Boolean =
-    file.findMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE).exists(_.getAttribute(IMarker.SEVERITY) == IMarker.SEVERITY_ERROR)
 
   def task(file: IFile, tag: String, msg: String, priority: String, offset: Int, length: Int, line: Int, monitor: IProgressMonitor) =
     workspaceRunnableIn(file.getWorkspace, monitor) { m =>

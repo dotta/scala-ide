@@ -59,6 +59,7 @@ class EclipseRefinedBuildManager(project: ScalaProject, settings0: Settings)
           file match {
             case EclipseResource(i: IFile) =>
               pendingSources += i
+              BuildProblemMarker.deleteAll(resource, includeSubtypes)
               FileUtils.clearBuildErrors(i, monitor.newChild(1))
               FileUtils.clearTasks(i, monitor.newChild(1))
             case _ =>

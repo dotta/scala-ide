@@ -98,8 +98,6 @@ class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IReso
   def scalaCompilerId = launchId + "." + scalaCompiler
   def scalaLibId = launchId + "." + scalaLib
   def launchTypeId = "scala.application"
-  def problemMarkerId = pluginId + ".problem"
-  def classpathProblemMarkerId = pluginId + ".classpathProblem"
 
   // Retained for backwards compatibility
   val oldPluginId = "ch.epfl.lamp.sdt.core"

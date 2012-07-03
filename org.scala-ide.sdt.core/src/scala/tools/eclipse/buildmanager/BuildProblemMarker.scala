@@ -16,5 +16,8 @@ object BuildProblemMarker extends MarkerFactory {
   def create(resource: IResource, msg: String): Unit =
     create(resource, IMarker.SEVERITY_ERROR, msg)
 
-  override protected def markerId: String = ScalaPlugin.plugin.problemMarkerId
+  def hasBuildErrors(resource: IResource): Boolean =
+    findAll(resource).exists(_.getAttribute(IMarker.SEVERITY) == IMarker.SEVERITY_ERROR)
+
+  override protected def markerId: String = ScalaPlugin.pluginId + ".problem"
 }

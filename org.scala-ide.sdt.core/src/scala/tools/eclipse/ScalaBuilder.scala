@@ -15,6 +15,7 @@ import scala.tools.eclipse.javaelements.JDTUtils
 import scala.tools.eclipse.util.{ FileUtils, ReflectionUtils }
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.nsc.interactive.RefinedBuildManager
+import scala.tools.eclipse.buildmanager.BuildProblemMarker
 
 class ScalaBuilder extends IncrementalProjectBuilder with HasLogger {
   def plugin = ScalaPlugin.plugin
@@ -56,7 +57,7 @@ class ScalaBuilder extends IncrementalProjectBuilder with HasLogger {
     else {
       kind match {
         case INCREMENTAL_BUILD | AUTO_BUILD =>
-          val addedOrUpdated0 = new HashSet[IFile] ++ allSourceFiles.filter(FileUtils.hasBuildErrors(_))
+          val addedOrUpdated0 = new HashSet[IFile] ++ allSourceFiles.filter(BuildProblemMarker.hasBuildErrors(_))
           val removed0 = new HashSet[IFile]
                                           
           getDelta(project.underlying).accept(new IResourceDeltaVisitor {
@@ -128,7 +129,7 @@ class ScalaBuilder extends IncrementalProjectBuilder with HasLogger {
     }
     
     // SBT build manager already calls java builder internally
-    if (allSourceFiles.exists(FileUtils.hasBuildErrors(_)) || !shouldRunJavaBuilder)
+    if (allSourceFiles.exists(BuildProblemMarker.hasBuildErrors(_)) || !shouldRunJavaBuilder)
       depends.toArray
     else {
       ensureProject

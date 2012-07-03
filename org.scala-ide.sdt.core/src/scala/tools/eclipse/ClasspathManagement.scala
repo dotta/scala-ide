@@ -29,6 +29,8 @@ import org.eclipse.jdt.core.JavaModelException
 import scala.tools.eclipse.logging.HasLogger
 import java.io.File
 import org.eclipse.jdt.internal.core.JavaProject
+import scala.tools.eclipse.buildmanager.BuildProblemMarker
+import scala.tools.eclipse.resources.MarkerFactory
 
 /** The Scala classpath broken down in the JDK, Scala library and user library.
  *
@@ -320,21 +322,19 @@ trait ClasspathManagement extends HasLogger { self: ScalaProject =>
       override def run(monitor: IProgressMonitor): IStatus = {
         if (underlying.isOpen()) { // cannot change markers on closed project
           // clean the classpath markers
-          underlying.deleteMarkers(plugin.classpathProblemMarkerId, false, IResource.DEPTH_ZERO)
+          ClasspathManagement.ClasspathProblemMarker.delete(underlying, false)
 
           // add a new marker if needed
           severity match {
             case IMarker.SEVERITY_ERROR | IMarker.SEVERITY_WARNING =>
               if (severity == IMarker.SEVERITY_ERROR) {
                 // delete all other Scala and Java error markers
-                underlying.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
+                BuildProblemMarker.deleteAll(underlying)
                 underlying.deleteMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)
               }
 
               // create the classpath problem marker
-              val marker = underlying.createMarker(plugin.classpathProblemMarkerId)
-              marker.setAttribute(IMarker.MESSAGE, message)
-              marker.setAttribute(IMarker.SEVERITY, severity)
+              ClasspathManagement.ClasspathProblemMarker.create(underlying, severity, message)
 
             case _ =>
           }
@@ -344,5 +344,11 @@ trait ClasspathManagement extends HasLogger { self: ScalaProject =>
     }
     markerJob.setRule(underlying)
     markerJob.schedule()
+  }
+}
+
+private object ClasspathManagement {
+  object ClasspathProblemMarker extends MarkerFactory {
+    override protected def markerId = ScalaPlugin.pluginId + ".classpathProblem"
   }
 }

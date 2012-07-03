@@ -1,10 +1,11 @@
 package scala.tools.eclipse.resources
 
 import scala.tools.eclipse.util.EclipseUtils
-
 import org.eclipse.core.resources.IMarker
 import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.internal.resources.ResourceException
+import scala.tools.eclipse.logging.HasLogger
 
 object MarkerFactory {
   case class Position(offset: Int, length: Int, line: Int)
@@ -25,7 +26,7 @@ object MarkerFactory {
  *     }
  * }}}
  */
-trait MarkerFactory {
+trait MarkerFactory extends HasLogger {
   /**
    * Create marker without a source position in the Problem view.
    * @param resource: The resource to use to create the marker (hence, the marker will be associated to the passed resource)
@@ -50,13 +51,16 @@ trait MarkerFactory {
   }
 
   /** Delete all markers on the given resource, but not any of its members. */
-  def delete(resource: IResource): Unit = delete(resource, IResource.DEPTH_ZERO)
+  def delete(resource: IResource, includeSubtypes: Boolean = true): Unit = delete(resource, includeSubtypes, IResource.DEPTH_ZERO)
 
   /** Delete all markers on the given resource, and its direct and indirect members at any depth. */
-  def deleteAll(resource: IResource): Unit = delete(resource, IResource.DEPTH_INFINITE)
+  def deleteAll(resource: IResource, includeSubtypes: Boolean = true, monitor: IProgressMonitor = null): Unit = delete(resource, includeSubtypes, IResource.DEPTH_INFINITE, monitor)
+  
+  def findAll(resource: IResource) : Seq[IMarker] =
+    resource.findMarkers(markerId, true, IResource.DEPTH_INFINITE)
 
-  private def delete(resource: IResource, depth: Int): Unit = runInWorkspace(resource) { _ =>
-    resource.deleteMarkers(markerId, /* includeSubtypes = */ true, depth)
+  private def delete(resource: IResource, includeSubtypes: Boolean, depth: Int, monitor: IProgressMonitor): Unit = runInWorkspace(resource, monitor) { _ =>
+    resource.deleteMarkers(markerId, includeSubtypes, depth)
   }
 
   private def createMarkerWithAttributes(severity: Int, msg: String): IResource => IMarker =
@@ -68,8 +72,11 @@ trait MarkerFactory {
   /** A unique identifier for the created marker. */
   protected def markerId: String
 
-  private def runInWorkspace(resource: IResource)(f: IProgressMonitor => Unit): Unit =
-    EclipseUtils.workspaceRunnableIn(resource.getWorkspace, null)(f)
+  private def runInWorkspace(resource: IResource, monitor: IProgressMonitor)(f: IProgressMonitor => Unit): Unit =
+    try EclipseUtils.workspaceRunnableIn(resource.getWorkspace, monitor)(f)
+    catch {
+      case re : ResourceException => eclipseLog.error(re)
+    }
 
   private def update(severity: Int, msg: String): IMarker => IMarker = marker => {
     marker.setAttribute(IMarker.SEVERITY, severity)
