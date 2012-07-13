@@ -403,13 +403,16 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         val name = c.name.toString
         val parentTree = c.impl.parents.head
         val isAnon = sym.isAnonymousClass
-        val superClass = sym.superClass
-        val superName = if (superClass ne NoSymbol) superClass.toString else "Object"
+        val superClassName = mapType(sym.superClass)
+        val interfaceNames = sym.mixinClasses.map(mapType)
+
         val classElem =
           if(sym hasFlag Flags.TRAIT)
             new ScalaTraitElement(element, name)
           else if (isAnon) {
-        	new ScalaAnonymousClassElement(element, superName)
+            val mixings = (superClassName :: interfaceNames) filterNot (s => s == mapType(definitions.ObjectClass) || s == mapType(definitions.ScalaObjectClass))
+            val name = mixings.mkString(" with ")
+        	new ScalaAnonymousClassElement(element, name)
           }
           else
             new ScalaClassElement(element, name, false)
@@ -449,12 +452,9 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         
         val annotsPos = addAnnotations(sym, classElemInfo, classElem)
 
-        classElemInfo.setSuperclassName(mapType(superClass).toCharArray)
-        
-        val interfaceNames = sym.mixinClasses.map { m => 
-          mapType(m).toCharArray
-        }
-        classElemInfo.setSuperInterfaceNames(interfaceNames.toArray)
+        classElemInfo.setSuperclassName(superClassName.toCharArray)
+
+        classElemInfo.setSuperInterfaceNames(interfaceNames.map(_.toCharArray).toArray)
         
         val (start, end) = if (!isAnon) {
           val start0 = c.pos.point 

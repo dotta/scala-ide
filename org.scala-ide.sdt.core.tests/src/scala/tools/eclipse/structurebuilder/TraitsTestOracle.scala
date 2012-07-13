@@ -67,8 +67,8 @@ C1.scala [in traits [in src [in simple-structure-builder]]]
     scala.runtime.Null. map(scala.Function1<scala.collection.immutable.List<java.lang.Object>,U>)
     scala.runtime.Null. takeArray(scala.collection.immutable.List<java.lang.String>[])
     scala.Null takeArray2(byte[][])
-    java.lang.Object localClass(int)
-      class class Object
+    java.lang.Runnable localClass(int)
+      class java.lang.Runnable
         $anon()
         void run()
     int localMethod(int)
