@@ -50,6 +50,10 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
       if (tree.pos.isOpaqueRange && tree.pos.isDefined) {
         report(tree)
         tree match { 
+         case ClassDef(mods, name, tparams, impl) if tree.symbol.isAnonymousClass => 
+           traverseTrees(mods.annotations); traverseTrees(tparams); traverse(impl)
+         case TypeDef(mods, name, tparams, rhs) if !tree.symbol.isAliasType =>
+           traverseTrees(mods.annotations); traverseTrees(tparams); traverse(rhs)
          case Function(vparams, body) => traverseTrees(vparams); traverse(body)
          case _ => super.traverse(tree)
         }
@@ -344,23 +348,18 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
     
     def reportTypeReference(tpe: Type, refPos: Position) {
       if (tpe eq null) return
-      val ref = new SingleTypeReference(tpe.typeSymbol.nameString.toCharArray, posToLong(refPos))
+      val ref = new SingleTypeReference(mapType(tpe.typeSymbol).toCharArray, posToLong(refPos))
       if (matchLocator.patternLocator.`match`(ref, possibleMatch.nodeSet) > 0) {
-        val enclosingElement = scu match {
-          case ssf: ScalaSourceFile => ssf.getElementAt(refPos.start)
-          case _ => null
-        }
-        //since we consider only the class name (and not its fully qualified name), 
-        //the search is inaccurate 
-        // Matt: JUnit search results require ACCURATE matches to locate its annotations 
-        val accuracy = SearchMatch.A_ACCURATE
-        val offset = refPos.start
-        val length = refPos.end - offset
-        val insideDocComment = false
-        val participant = possibleMatch.document.getParticipant
-        val resource = possibleMatch.resource
+        getJavaElement(enclosingDeclaration, scu.project.javaProject).foreach { element => 
+          val accuracy = SearchMatch.A_ACCURATE
+          val offset = refPos.start
+          val length = refPos.end - offset
+          val insideDocComment = false
+          val participant = possibleMatch.document.getParticipant
+          val resource = possibleMatch.resource
 
-        report(new TypeReferenceMatch(enclosingElement, accuracy, offset, length, insideDocComment, participant, resource))
+          report(new TypeReferenceMatch(element, accuracy, offset, length, insideDocComment, participant, resource))
+        }
       }
     }
   }
