@@ -177,17 +177,18 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
             case (qualifier,name) => fullyQualifiedName(qualifier, name)
           }
 
-          val currentParamsTypes = tpe.paramss.flatten
+          val currentParamTypes = tpe.paramss.flatten
 
-          for((searchedParamTpe, paramTpe) <- searchedParamTypes.zip(currentParamsTypes)) {
-            val tpeBaseClasses = paramTpe.tpe.baseClasses
+          for (i <- 0 to currentParamTypes.size - 1) {
+            val tpeBaseClasses = currentParamTypes(i).tpe.baseClasses
             val noMatch = !tpeBaseClasses.exists { bc =>
-              pat.matchesName(searchedParamTpe, mapType(bc).toCharArray)
+              val tpe1 = searchedParamTypes(i)
+              val tpe2 = mapType(bc).toCharArray
+              pat.matchesName(tpe1, tpe2)
             }
             if (noMatch) 
-              return false
+              return false        
           }
-
           true
       })
     
