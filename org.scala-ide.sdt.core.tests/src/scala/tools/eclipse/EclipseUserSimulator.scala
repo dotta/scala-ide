@@ -1,11 +1,12 @@
 package scala.tools.eclipse
 
 import org.eclipse.core.internal.resources.{ Workspace, Project, File }
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.Path
+import org.eclipse.core.resources.IWorkspace
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core.search.SearchRequestor
 import org.eclipse.jdt.core.search.SearchMatch
+import scala.tools.eclipse.javaelements.ScalaCompilationUnit
 
 class EclipseUserSimulator {
   import org.eclipse.jdt.core._;
@@ -50,14 +51,20 @@ class EclipseUserSimulator {
 
     ScalaPlugin.plugin.getScalaProject(project);
   }
+  
+  def createScalaCompilationUnit(pkgName: String, fileName: String, content: String): ScalaCompilationUnit = {
+    val pkg = createPackage(pkgName)
+    val scalaFileName = fileName + ".scala"
+    createCompilationUnit(pkg, scalaFileName, content).asInstanceOf[ScalaCompilationUnit]
+  }
 
   def createPackage(packageName: String): IPackageFragment =
     root.createPackageFragment(packageName, false, null);
 
-  def createCompilationUnit(pack: IPackageFragment, name: String, sourceCode: String) = {
+  def createCompilationUnit(pack: IPackageFragment, name: String, sourceCode: String): ICompilationUnit = {
     val cu = pack.createCompilationUnit(name, sourceCode, false, null);
     Thread.sleep(200)
-    cu;
+    cu
   }
 
   def buildWorkspace {

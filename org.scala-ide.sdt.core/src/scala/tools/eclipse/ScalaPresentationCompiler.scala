@@ -23,6 +23,7 @@ import scala.tools.eclipse.logging.HasLogger
 import scala.tools.nsc.util.FailedInterrupt
 import scala.tools.nsc.symtab.Flags
 import scala.tools.eclipse.completion.CompletionProposal
+import scala.tools.eclipse.javaelements.SymbolName
 
 class ScalaPresentationCompiler(project : ScalaProject, settings : Settings)
   extends Global(settings, new ScalaPresentationCompiler.PresentationReporter, project.underlying.getName)
@@ -30,7 +31,8 @@ class ScalaPresentationCompiler(project : ScalaProject, settings : Settings)
   with ScalaIndexBuilder 
   with ScalaMatchLocator
   with ScalaOverrideIndicatorBuilder 
-  with ScalaJavaMapper 
+  with ScalaJavaMapper
+  with SymbolName
   with JavaSig
   with JVMUtils 
   with LocateSymbol 
