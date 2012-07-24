@@ -48,18 +48,16 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with Has
       val results = projects.map(p => Option(p.findType(fullClassName)))
       results.find(_.isDefined).flatten.headOption
     } else getJavaElement(sym.owner) match {
-        case Some(ownerClass: IType) => 
-          val isGetterOrSetter: Boolean = sym.isGetter || sym.isSetter
-          val methods = ownerClass.getMethods
-          val fields = ownerClass.getFields
-          val m = methods.find(matchesMethod)
-          if (sym.isMethod && (!isGetterOrSetter || sym.isDeferred)) ownerClass.getMethods.find(matchesMethod)
+        case Some(ownerClass: IType) =>
+          def isGetterOrSetter: Boolean = sym.isGetter || sym.isSetter
+          def isConcreteGetterOrSetter: Boolean = isGetterOrSetter && !sym.isDeferred
+          if (sym.isMethod && !isConcreteGetterOrSetter) ownerClass.getMethods.find(matchesMethod)
           else {
             val fieldName = 
               if(self.nme.isLocalName(sym.name)) self.nme.localToGetter(sym.name)
               else sym.name
 
-            fields.find(_.getElementName == fieldName.toString)
+            ownerClass.getFields.find(_.getElementName == fieldName.toString)
           }
         case _ => None
     }
