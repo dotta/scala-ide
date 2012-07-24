@@ -14,6 +14,7 @@ import scala.tools.eclipse.ScalaPresentationCompiler
 import scala.tools.eclipse.util.ReflectionUtils
 import org.eclipse.jdt.internal.core.search.matching.{ PatternLocator, FieldPattern, MethodPattern, TypeReferencePattern, TypeDeclarationPattern, OrPattern }
 import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jdt.core.Signature
 
 //FIXME should report all and let matcher to the selection OR only report matcher interest (pre select by type) OR ...
 
@@ -348,7 +349,7 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
     
     def reportTypeReference(tpe: Type, refPos: Position) {
       if (tpe eq null) return
-      val ref = new SingleTypeReference(mapType(tpe.typeSymbol).toCharArray, posToLong(refPos))
+      val ref = new SingleTypeReference(tpe.typeSymbol.nameString.toCharArray/*mapType(tpe.typeSymbol).toCharArray*/, posToLong(refPos))
       if (matchLocator.patternLocator.`match`(ref, possibleMatch.nodeSet) > 0) {
         getJavaElement(enclosingDeclaration, scu.project.javaProject).foreach { element => 
           val accuracy = SearchMatch.A_ACCURATE

@@ -29,12 +29,12 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with Has
     def matchesMethod(meth: IMethod): Boolean = {
       import Signature._
       askOption { () =>
-        lazy val methName = meth.getElementName
-        lazy val symName = (if(sym.isConstructor) sym.owner.simpleName.toString + (if (sym.owner.isModuleClass) "$" else "") else sym.name.toString)
-        lazy val sameName = methName == symName
-        lazy val methParamsTpe = meth.getParameterTypes.map(tp => getTypeErasure(getElementType(tp)))
-        lazy val symParamsTpe = sym.paramss.flatten.map(param => mapParamTypeSignature(param.tpe))
-        lazy val sameParams = methParamsTpe.sameElements(symParamsTpe)
+        val methName = meth.getElementName
+        val symName = (if(sym.isConstructor) sym.owner.simpleName.toString + (if (sym.owner.isModuleClass) "$" else "") else sym.name.toString)
+        val sameName = methName == symName
+        val methParamsTpe = meth.getParameterTypes.map(tp => getTypeErasure(getElementType(tp)))
+        val symParamsTpe = sym.paramss.flatten.map(param => mapParamTypeSignature(param.tpe))
+        val sameParams = methParamsTpe.sameElements(symParamsTpe)
         sameName && sameParams
       }.getOrElse(false)
     }
@@ -49,14 +49,17 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with Has
       results.find(_.isDefined).flatten.headOption
     } else getJavaElement(sym.owner) match {
         case Some(ownerClass: IType) => 
-          def isGetterOrSetter: Boolean = sym.isGetter || sym.isSetter
-          if (sym.isMethod && !isGetterOrSetter) ownerClass.getMethods.find(matchesMethod)
+          val isGetterOrSetter: Boolean = sym.isGetter || sym.isSetter
+          val methods = ownerClass.getMethods
+          val fields = ownerClass.getFields
+          val m = methods.find(matchesMethod)
+          if (sym.isMethod && (!isGetterOrSetter || sym.isDeferred)) ownerClass.getMethods.find(matchesMethod)
           else {
             val fieldName = 
               if(self.nme.isLocalName(sym.name)) self.nme.localToGetter(sym.name)
               else sym.name
 
-            ownerClass.getFields.find(_.getElementName == fieldName.toString)
+            fields.find(_.getElementName == fieldName.toString)
           }
         case _ => None
     }
@@ -74,13 +77,13 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with Has
 
   def mapModifiers(owner: Symbol) : Int = {
     var jdtMods = 0
-    if(owner.hasFlag(Flags.PRIVATE))
+    if(owner.isPrivate)
       jdtMods = jdtMods | ClassFileConstants.AccPrivate
     else
       // protected entities need to be exposed as public to match scala compiler's behavior.
       jdtMods = jdtMods | ClassFileConstants.AccPublic
     
-    if(owner.hasFlag(Flags.ABSTRACT) || owner.hasFlag(Flags.DEFERRED))
+    if(owner.isAbstract || owner.isDeferred)
       jdtMods = jdtMods | ClassFileConstants.AccAbstract
 
     if(owner.isFinal || owner.hasFlag(Flags.MODULE))

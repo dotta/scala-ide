@@ -403,17 +403,14 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         val name = c.name.toString
         val parentTree = c.impl.parents.head
         val isAnon = sym.isAnonymousClass
-        val superClassName = mapType(sym.superClass)
-        val interfaceNames = sym.mixinClasses.map(mapType)
+        val superClass = sym.superClass
+        val superName = mapType(superClass)
 
         val classElem =
           if(sym hasFlag Flags.TRAIT)
             new ScalaTraitElement(element, name)
-          else if (isAnon) {
-            val mixings = (superClassName :: interfaceNames) filterNot (s => s == mapType(definitions.ObjectClass) || s == mapType(definitions.ScalaObjectClass))
-            val name = mixings.mkString(" with ")
-        	new ScalaAnonymousClassElement(element, name)
-          }
+          else if (isAnon)
+            new ScalaAnonymousClassElement(element, superName)
           else
             new ScalaClassElement(element, name, false)
         
@@ -452,9 +449,9 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         
         val annotsPos = addAnnotations(sym, classElemInfo, classElem)
 
-        classElemInfo.setSuperclassName(superClassName.toCharArray)
-
-        classElemInfo.setSuperInterfaceNames(interfaceNames.map(_.toCharArray).toArray)
+        classElemInfo.setSuperclassName(superName.toCharArray)
+        val interfaceNames = sym.mixinClasses.map(mapType(_).toCharArray)
+        classElemInfo.setSuperInterfaceNames(interfaceNames.toArray)
         
         val (start, end) = if (!isAnon) {
           val start0 = c.pos.point 
@@ -565,10 +562,10 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
       override def addVal(v : ValDef) : Owner = {
         val elemName = nme.getterName(v.name)
         val sym = v.symbol
-        val display = elemName.toString+" : "+sym.tpe.toString
-        
+        val display = elemName.toString+" : "+sym.info.resultType.toString
+
         val valElem =
-          if(sym.hasFlag(Flags.MUTABLE))
+          if(sym.isMutable)
             new ScalaVarElement(element, elemName.toString, display)
           else
             new ScalaValElement(element, elemName.toString, display)
@@ -576,7 +573,7 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         addChild(valElem)
         
         val valElemInfo = new ScalaSourceFieldElementInfo
-        val jdtFinal = if(sym.hasFlag(Flags.MUTABLE)) 0 else ClassFileConstants.AccFinal
+        val jdtFinal = if(sym.isMutable) 0 else ClassFileConstants.AccFinal
         valElemInfo.setFlags0(mapModifiers(sym)|jdtFinal)
         
         val annotsPos = addAnnotations(sym, valElemInfo, valElem)
@@ -597,9 +594,11 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
         if (sym ne NoSymbol) {
           sym.initialize
           val getter = sym.getter(sym.owner)
-          if (getter hasFlag Flags.ACCESSOR) addDef(getter)
+          val getterHasAccessorFlag = getter.hasAccessorFlag
+          if (getter.hasAccessorFlag) addDef(getter)
           val setter = sym.setter(sym.owner)
-          if (setter hasFlag Flags.ACCESSOR) addDef(setter)
+          val setterHasAccessorFlag = getter.hasAccessorFlag
+          if (setter.hasAccessorFlag) addDef(setter)
           addBeanAccessors(sym)
         }
 
@@ -918,9 +917,7 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
           }
 
           tree match {
-            case dt : DefTree if dt.symbol.isSynthetic ||
-              // Accessors are added in ValOwner, when they are not, remove. 
-              dt.symbol.hasFlag(Flags.ACCESSOR) => (builder, Nil)
+            case dt : DefTree if dt.symbol.isSynthetic => (builder, Nil)
             case pd : PackageDef => (builder.addPackage(pd), pd.stats)
             case i : Import => (builder.addImport(i), Nil)
             case cd : ClassDef =>
