@@ -243,7 +243,7 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
     def report(tree: Tree) = tree match {
       case s @ Select(qualifier, _) =>
         report(qualifier)
-        if(s.symbol.isValue || s.symbol.isVariable)
+        if(s.symbol.isValue || s.symbol.isVariable || s.symbol.isAliasType)
           reportVariableReference(s, pattern)
       case _ =>
     }

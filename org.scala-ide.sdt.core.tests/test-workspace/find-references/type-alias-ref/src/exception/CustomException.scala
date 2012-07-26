@@ -1,0 +1,3 @@
+package exception
+
+class CustomException extends RuntimeException

@@ -258,4 +258,10 @@ class FindReferencesTests extends FindReferencesTester with HasLogger {
     val expected = fieldVar("Foo.obj1") isReferencedBy clazzConstructor("Bar") and fieldVal("Bar.bar") and method("Bar.bar2")
     runTest("var_ref", "Bar.scala", expected)
   }
+
+  @Test
+  def findReferencesOfExceptionTypeInThrowExpression() {
+    val expected = typeAlias("Foo.AliasedCustomException") isReferencedBy clazzConstructor("Foo")
+    runTest("type-alias-ref", "Foo.scala", expected)
+  }
 }
