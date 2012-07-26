@@ -243,7 +243,7 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
     def report(tree: Tree) = tree match {
       case s @ Select(qualifier, _) =>
         report(qualifier)
-        if(s.symbol.isValue || s.symbol.isVariable || s.symbol.isAliasType)
+        if(s.symbol.isValue || s.symbol.isVariable)
           reportVariableReference(s, pattern)
       case _ =>
     }
@@ -306,7 +306,7 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
           case _ => 
         }
         case n: New =>
-          reportTypeReference(n.tpe, n.tpt.pos)
+          reportTypeReference(n.tpt.symbol, n.tpt.pos)
         case _ => 
       }
     
@@ -352,9 +352,12 @@ trait ScalaMatchLocator { self: ScalaPresentationCompiler =>
     }
     
     def reportTypeReference(tpe: Type, refPos: Position) {
-      if (tpe eq null) return
+      reportTypeReference(tpe.typeSymbolDirect, refPos)
+    }
+
+    def reportTypeReference(tpeSymbol: Symbol, refPos: Position) {
       val patternFullyQualifiedName = fullyQualifiedName(qualification(pattern), simpleName(pattern))
-      if(pattern.matchesName(patternFullyQualifiedName, mapType(tpe.typeSymbol).toCharArray)) {
+      if(pattern.matchesName(patternFullyQualifiedName, mapType(tpeSymbol).toCharArray)) {
         getJavaElement(enclosingDeclaration, scu.project.javaProject).foreach { enclosingElement => 
           val accuracy = SearchMatch.A_ACCURATE
           val offset = refPos.start

@@ -20,7 +20,6 @@ trait FindReferencesTester {
   case class FieldVar(fullName: String) extends Element
   case class FieldVal(fullName: String) extends Element
   case class Clazz(fullName: String) extends Element
-  case class TypeAlias(fullName: String) extends Element
   case class Module(fullName: String) extends Element
 
   def method(fullName: String, args: List[String] = Nil): Element = Method(fullName, args)
@@ -30,7 +29,7 @@ trait FindReferencesTester {
   def clazzConstructor(classFullName: String, args: List[String] = Nil): Element = Method(constructorFullName(classFullName), args)
   def module(fullName: String): Element = Module(fullName + SymbolNameUtil.MODULE_SUFFIX_STRING)
   def moduleConstructor(fullName: String, args: List[String] = Nil): Element = Method(constructorFullName(fullName + SymbolNameUtil.MODULE_SUFFIX_STRING), args)
-  def typeAlias(fullName: String): Element = TypeAlias(fullName)
+  def typeAlias(fullName: String): Element = Clazz(fullName)
 
   private def constructorFullName(classFullName: String): String = {
     val constructorMethodName = classFullName.split('.').last

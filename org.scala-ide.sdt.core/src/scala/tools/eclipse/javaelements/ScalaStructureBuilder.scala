@@ -612,44 +612,64 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
       }
     }
     
-    trait TypeOwner extends Owner { self =>
+    trait TypeOwner extends Owner with ClassOwner { self =>
       override def addType(t : TypeDef) : Owner = {
-        //logger.info("Type defn: >"+t.name.toString+"< ["+this+"]")
-        
         val sym = t.symbol
         val name = t.name.toString
 
         val typeElem = new ScalaTypeElement(element, name, name)
         resolveDuplicates(typeElem)
         addChild(typeElem)
-
-        val typeElemInfo = new ScalaSourceFieldElementInfo
-        typeElemInfo.setFlags0(mapModifiers(sym))
-
-        val annotsPos = addAnnotations(sym, typeElemInfo, typeElem)
         
-        val start = t.pos.point
-        val end = start+t.name.length-1
+        val superClass = sym.superClass
+        val superName = mapType(superClass)
+        
+        val typeElemInfo = new ScalaElementInfo
+        classes(sym) = (typeElem, typeElemInfo)
+        
+        if (!sym.typeParams.isEmpty) {
+          val typeParams = sym.typeParams.map { tp =>
+            val typeParameter = new TypeParameter(typeElem, tp.name.toString)
+            val tpElementInfo = new TypeParameterElementInfo
+            val parents = tp.info.parents
+            if (!parents.isEmpty) {
+              tpElementInfo.boundsSignatures = parents.map(_.typeSymbol.fullName.toCharArray).toArray 
+              tpElementInfo.bounds = parents.map(_.typeSymbol.name.toChars).toArray
+            }
+            newElements0.put(typeParameter, tpElementInfo)
+            typeParameter
+          }
+          typeElemInfo setTypeParameters typeParams.toArray
+        }
+        
+        typeElemInfo.setHandle(typeElem)
+        typeElemInfo.setFlags0(ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic)
+        
+        val annotsPos = addAnnotations(sym, typeElemInfo, typeElem)
 
+        typeElemInfo.setSuperclassName(superName.toCharArray)
+        val interfaceNames = sym.mixinClasses.map(mapType(_).toCharArray)
+        typeElemInfo.setSuperInterfaceNames(interfaceNames.toArray)
+        
+        val (start, end) = {
+          val start0 = t.pos.point 
+          (start0, start0 + name.length - 1)
+        }
+        
         typeElemInfo.setNameSourceStart0(start)
         typeElemInfo.setNameSourceEnd0(end)
         setSourceRange(typeElemInfo, sym, annotsPos)
         newElements0.put(typeElem, typeElemInfo)
-        
-        if(t.rhs.symbol == NoSymbol) {
-          //logger.info("Type is abstract")
-          val tn = "java.lang.Object".toArray
-          typeElemInfo.setTypeName(tn)
-        } else {
-          //logger.info("Type has type: "+t.rhs.symbol.fullName)
-          val tn = mapType(t.rhs.symbol).toArray
-          typeElemInfo.setTypeName(tn)
-        }
-        
+
+        fillOverrideInfos(sym)
+
         new Builder {
           val parent = self
           val element = typeElem
           val elementInfo = typeElemInfo
+          
+          override def isTemplate = true
+          override def template = this
         } 
       }
     }
@@ -929,15 +949,7 @@ trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentati
               (builder.addClass(cd), List(cd.impl))
             case md : ModuleDef => (builder.addModule(md), List(md.impl))
             case vd : ValDef =>  (builder.addVal(vd), List(vd.rhs))
-            case td : TypeDef => 
-              /* Entities nested in a Type Member definition are *not* traversed, because the Eclipse Java 
-               * Outline that we currently use does not handle members defined in a 
-               * {{{ org.eclipse.jdt.internal.core.SourceField }}} (which is the data structure we use to 
-               * expose type members definition to JDT). 
-               * For instance, the following is not correctly handled by the Outline when you click on the nested 
-               * member `a`: {{{type AkkaConfig = a.type forSome { val a: AnyRef }. Hence, for safety, currently 
-               * it is better to skip all children altogether. */ 
-              (builder.addType(td), Nil)
+            case td : TypeDef => (builder.addType(td), List(td.rhs))
             case dd : DefDef =>
               if(dd.name != nme.MIXIN_CONSTRUCTOR && (dd.symbol ne NoSymbol))
                 (builder.addDef(dd), List(dd.tpt, dd.rhs))
