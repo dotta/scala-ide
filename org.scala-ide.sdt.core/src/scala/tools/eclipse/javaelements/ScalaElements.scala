@@ -82,6 +82,12 @@ class ScalaClassElement(parent : JavaElement, name : String, synthetic : Boolean
   override def isVisible = !synthetic
 }
 
+class ScalaTypeElement(parent : JavaElement, name : String, display : String)
+  extends ScalaClassElement(parent, name, synthetic = false) {
+  override def getLabelText(flags : Long) = display
+  override def getImageDescriptor = ScalaImages.SCALA_TYPE
+}
+
 class ScalaAnonymousClassElement(parent : JavaElement, name : String)
   extends ScalaClassElement(parent, name, false) {
     override def getLabelText(flags : Long) = if (name != null ) "new "+name+" {...}" else "new {...}"
@@ -141,12 +147,6 @@ class ScalaVarElement(parent : JavaElement, name: String, display : String)
   extends SourceField(parent, name) with ScalaFieldElement {
   override def getLabelText(flags : Long) = display
 }
-
-class ScalaTypeElement(parent : JavaElement, name : String, display : String)
-  extends SourceField(parent, name) with ScalaFieldElement {
-  override def getLabelText(flags : Long) = display
-  override def getImageDescriptor = ScalaImages.SCALA_TYPE
-} 
 
 class ScalaLocalVariableElement(
   parent : JavaElement, name : String,

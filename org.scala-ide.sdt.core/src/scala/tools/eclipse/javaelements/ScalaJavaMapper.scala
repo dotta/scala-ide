@@ -14,6 +14,7 @@ import scala.tools.eclipse.logging.HasLogger
 import org.eclipse.jdt.core._
 import org.eclipse.jdt.internal.core.JavaModelManager
 import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.internal.core.JavaElement
 
 trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with HasLogger { self : ScalaPresentationCompiler => 
 
@@ -47,6 +48,13 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with SymbolNameUtil with Has
       val fullClassName = mapType(sym)
       val results = projects.map(p => Option(p.findType(fullClassName)))
       results.find(_.isDefined).flatten.headOption
+    } else if (sym.isAliasType) getJavaElement(sym.toplevelClass) match { 
+      case Some(ownerClass: LazyToplevelClass) =>
+        val fullClassName = mapType(sym)
+        val results = projects.map(p => Option(p.findType(fullClassName)))
+        val result: IJavaElement = results.find(_.isDefined).flatten.headOption.get
+        val res = ownerClass.mirror.map(_.getCorrespondingElement(result)).flatten.headOption
+        res
     } else getJavaElement(sym.owner) match {
         case Some(ownerClass: IType) =>
           def isGetterOrSetter: Boolean = sym.isGetter || sym.isSetter

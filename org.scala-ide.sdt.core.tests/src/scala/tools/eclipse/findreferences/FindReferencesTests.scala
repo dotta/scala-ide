@@ -125,8 +125,8 @@ class FindReferencesTests extends FindReferencesTester with HasLogger {
       case e: ScalaAccessorElement => Method.apply _
       case e: ScalaVarElement      => FieldVar.apply _
       case e: ScalaValElement      => FieldVal.apply _
-      case e: ScalaClassElement    => Clazz.apply _
       case e: ScalaTypeElement     => TypeAlias.apply _
+      case e: ScalaClassElement    => Clazz.apply _
       case e: ScalaModuleElement   => Module.apply _
       case e: SourceType           => Clazz.apply _
       case _ =>
@@ -182,7 +182,7 @@ class FindReferencesTests extends FindReferencesTester with HasLogger {
 
   @Test
   def findReferencesOfClassTypeInMethodTypeBound_bug1000063_2() {
-    val expected = clazz("ReferredClass") isReferencedBy clazz("ReferringClass") and typeAlias("ReferringClass.typedSet") and method("ReferringClass.foo")
+    val expected = clazz("ReferredClass") isReferencedBy clazz("ReferringClass") and typeAlias("ReferringClass$typedSet") and method("ReferringClass.foo")
     runTest("bug1000063_2", "FindReferencesOfClassType.scala", expected)
   }
 
@@ -261,7 +261,13 @@ class FindReferencesTests extends FindReferencesTester with HasLogger {
 
   @Test
   def findReferencesOfExceptionTypeInThrowExpression() {
-    val expected = typeAlias("Foo.AliasedCustomException") isReferencedBy clazzConstructor("Foo")
+    val expected = typeAlias("Foo$AliasedCustomException") isReferencedBy clazzConstructor("Foo") and method("Foo.foo")
     runTest("type-alias-ref", "Foo.scala", expected)
+  }
+
+  @Test
+  def findReferencesOfExceptionTypeInThrowExpression2() {
+    val expected = clazz("CustomException") isReferencedBy method("Foo.foo") and typeAlias("Foo$AliasedCustomException")
+    runTest("type-ref", "Foo.scala", expected)
   }
 }
