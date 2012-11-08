@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.scala-ide</groupId>
+    <artifactId>org.scala-ide.build-toolchain</artifactId>
+    <version>2.1.0-SNAPSHOT</version>
+    <relativePath>../org.scala-ide.build-toolchain/pom.xml</relativePath>
+  </parent>
+  <artifactId>org.scala-ide.akka-actor.library</artifactId>
+  <description>Bundle containing the Akka actor library</description>
+  <packaging>bundle</packaging>
+
+  <properties>
+    <!-- akka-actor jar is different for each profile -->
+    <akka-actor.artifactId>specify a profile!</akka-actor.artifactId>
+    <akka-actor.version>specify a profile!</akka-actor.version>
+  </properties>
+
+   <profiles>
+     <profile>
+       <!--- the profile using the default values. Scala 2.9.x -->
+       <id>scala-2.9.x</id>
+       <properties>
+         <akka-actor.artifactId>akka-actor</akka-actor.artifactId>
+         <akka-actor.version>2.0.3</akka-actor.version>
+       </properties>
+     </profile>
+     <profile>
+       <!--- the profile using the default values. Scala 2.10.x -->
+       <id>scala-2.10.x</id>
+       <properties>
+         <akka-actor.artifactId>akka-actor_2.10.0-SNAPSHOT</akka-actor.artifactId>
+         <akka-actor.version>2.1-SNAPSHOT</akka-actor.version>
+       </properties>
+     </profile>
+     <profile>
+       <!--- the profile using the default values. Scala 2.11.x -->
+       <id>scala-2.11.x</id>
+       <properties>
+         <akka-actor.artifactId>akka-actor_2.11.0-SNAPSHOT</akka-actor.artifactId>
+         <akka-actor.version>2.1-SNAPSHOT</akka-actor.version>
+       </properties>
+     </profile>
+   </profiles>
+
+  <dependencies>
+    <dependency>
+       <groupId>com.typesafe.akka</groupId>
+       <artifactId>${akka-actor.artifactId}</artifactId>
+       <version>${akka-actor.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- add the source jars, to be able to attach the source to the Scala container -->
+            <id>copy</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.typesafe.akka</groupId>
+                  <artifactId>${akka-actor.artifactId}</artifactId>
+                  <version>${akka-actor.version}</version>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <destFileName>akka-actor-src.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
