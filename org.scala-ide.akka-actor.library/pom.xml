@@ -14,6 +14,7 @@
 
   <properties>
     <!-- akka-actor jar is different for each profile -->
+    <akka-actor.artifactName>akka-actor</akka-actor.artifactName>
     <akka-actor.artifactId>specify a profile!</akka-actor.artifactId>
     <akka-actor.version>specify a profile!</akka-actor.version>
   </properties>
@@ -23,15 +24,15 @@
        <!--- the profile using the default values. Scala 2.9.x -->
        <id>scala-2.9.x</id>
        <properties>
-         <akka-actor.artifactId>akka-actor</akka-actor.artifactId>
-         <akka-actor.version>2.0.3</akka-actor.version>
+         <akka-actor.artifactId>${akka-actor.artifactName}</akka-actor.artifactId>
+         <akka-actor.version>2.0.4</akka-actor.version>
        </properties>
      </profile>
      <profile>
        <!--- the profile using the default values. Scala 2.10.x -->
        <id>scala-2.10.x</id>
        <properties>
-         <akka-actor.artifactId>akka-actor_2.10.0-SNAPSHOT</akka-actor.artifactId>
+         <akka-actor.artifactId>${akka-actor.artifactName}_2.10.0-SNAPSHOT</akka-actor.artifactId>
          <akka-actor.version>2.1-SNAPSHOT</akka-actor.version>
        </properties>
      </profile>
@@ -39,7 +40,7 @@
        <!--- the profile using the default values. Scala 2.11.x -->
        <id>scala-2.11.x</id>
        <properties>
-         <akka-actor.artifactId>akka-actor_2.11.0-SNAPSHOT</akka-actor.artifactId>
+         <akka-actor.artifactId>${akka-actor.artifactName}_2.11.0-SNAPSHOT</akka-actor.artifactId>
          <akka-actor.version>2.1-SNAPSHOT</akka-actor.version>
        </properties>
      </profile>
@@ -47,9 +48,10 @@
 
   <dependencies>
     <dependency>
-       <groupId>com.typesafe.akka</groupId>
-       <artifactId>${akka-actor.artifactId}</artifactId>
-       <version>${akka-actor.version}</version>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>${akka-actor.artifactId}</artifactId>
+      <version>${akka-actor.version}</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 
@@ -62,7 +64,7 @@
           <execution>
             <!-- add the source jars, to be able to attach the source to the Scala container -->
             <id>copy</id>
-            <phase>compile</phase>
+            <phase>validate</phase>
             <goals>
               <goal>copy</goal>
             </goals>
@@ -74,13 +76,32 @@
                   <version>${akka-actor.version}</version>
                   <classifier>sources</classifier>
                   <type>jar</type>
-                  <destFileName>akka-actor-src.jar</destFileName>
+                  <destFileName>${akka-actor.artifactId}-src.jar</destFileName>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <!-- generate the bundle -->
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.scala-ide.akka-actor.library</Bundle-SymbolicName>
+            <Bundle-Name>Akka Actor Library for Eclipse</Bundle-Name>
+            <Bundle-Version>${akka-actor.version}</Bundle-Version>
+            <Bundle-Vendor>scala-ide.org</Bundle-Vendor>
+            <Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
+            <_exportcontents>akka.*;version=${akka-actor.version}</_exportcontents>
+            <Embed-Directory>lib</Embed-Directory>
+            <Embed-StripVersion>true</Embed-StripVersion>
+            <Include-Resource>lib=${project.build.directory}/lib</Include-Resource>
+            <Import-Package>!sun.misc,!scala.*,*</Import-Package>
+          </instructions>
+        </configuration>
       </plugin>
     </plugins>
   </build>

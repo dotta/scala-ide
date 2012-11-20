@@ -34,6 +34,11 @@
          then as maven dependencies -->
     <dependency>
       <groupId>org.scala-ide</groupId>
+      <artifactId>org.scala-ide.akka-actor.library</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-ide</groupId>
       <artifactId>org.scala-ide.scala.library</artifactId>
       <version>${project.version}</version>
     </dependency>

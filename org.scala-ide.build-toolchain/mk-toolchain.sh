@@ -14,6 +14,7 @@ REPO=file:${SOURCE}/${REPO_NAME}
 
 rm -Rf ${SOURCE}
 mkdir -p ${PLUGINS}
+cp ../org.scala-ide.akka-actor.library/target/org.scala-ide.akka-actor.library*jar ${PLUGINS}
 cp ../org.scala-ide.scala.compiler/target/org.scala-ide.scala.compiler-${SCALA_VERSION}.jar ${PLUGINS}
 cp ../org.scala-ide.scala.library/target/org.scala-ide.scala.library-${SCALA_LIBRARY_VERSION}.jar ${PLUGINS}
 cp ../org.scala-ide.sbt.full.library/target/org.scala-ide.sbt.full.library*jar ${PLUGINS}

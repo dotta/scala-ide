@@ -90,6 +90,13 @@ SUCH DAMAGE.
    </requires>
 
    <plugin
+         id="org.scala-ide.akka-actor.library"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
          id="org.scala-ide.scala.library"
          download-size="0"
          install-size="0"
