@@ -7,9 +7,7 @@ package scala.tools.eclipse.javaelements
 
 import java.util.{ HashMap => JHashMap }
 
-import scala.tools.eclipse.ScalaImages
 import scala.tools.eclipse.contribution.weaving.jdt.IScalaClassFile
-import scala.tools.nsc.io.{AbstractFile, VirtualFile}
 
 import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.IProgressMonitor
@@ -20,8 +18,7 @@ import org.eclipse.jdt.internal.core.{BinaryType, ClassFile, JavaModelStatus, Pa
 import org.eclipse.jdt.internal.core.util.Util
 
 class ScalaClassFile(parent : PackageFragment, name : String, sourceFile : String)
-  extends ClassFile(parent, name) with ScalaCompilationUnit with IScalaClassFile {
-  override def getImageDescriptor = ScalaImages.SCALA_CLASS_FILE
+  extends ClassFile(parent, name) with IScalaClassFile {
 
   override def getElementAt(position : Int) : IJavaElement = {
     val e = getSourceElementAt(position)
@@ -44,15 +41,10 @@ class ScalaClassFile(parent : PackageFragment, name : String, sourceFile : Strin
     }
   }
   
-  override def codeSelect(offset : Int, length : Int, owner : WorkingCopyOwner) : Array[IJavaElement] =
-    codeSelect(this, offset, length, owner)
-  
   def getContents() = Option(getSourceMapper) flatMap 
     {mapper => Option(mapper.findSource(getType, getSourceFileName))} getOrElse Array.empty
-    
-  override lazy val file : AbstractFile = new VirtualFile(getSourceFileName, getSourceFilePath)
-  
-  def getSourceFileName() = sourceFile
+
+  override def getSourceFileName() = sourceFile
   
   def getSourceFilePath() = {
     val tpe = getType
@@ -74,7 +66,7 @@ class ScalaClassFile(parent : PackageFragment, name : String, sourceFile : Strin
 	override def exists = mirror.isDefined
   }
 
-  override def getType() : IType = new ScalaBinaryType(getTypeName)
+  override def getType() : BinaryType = new ScalaBinaryType(getTypeName)
   
   def getMainTypeName() : Array[Char] =
     Util.getNameWithoutJavaLikeExtension(getElementName).toCharArray

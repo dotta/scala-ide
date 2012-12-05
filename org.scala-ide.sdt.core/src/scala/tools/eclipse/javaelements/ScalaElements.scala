@@ -32,21 +32,6 @@ trait ScalaElement extends JavaElement with IScalaElement {
   def getLabelText(flags : Long) : String = labelName
   def getImageDescriptor : ImageDescriptor = null
   def isVisible = true
-  
-  override def getCompilationUnit() = {
-    val cu = super.getCompilationUnit()
-    if (cu != null) cu else new CompilationUnitAdapter(getClassFile().asInstanceOf[ScalaClassFile])
-  }
-    
-  override def getAncestor(ancestorType : Int) : IJavaElement = {
-    val ancestor = super.getAncestor(ancestorType)
-    if (ancestor != null)
-      ancestor
-    else if(ancestorType == IJavaElement.COMPILATION_UNIT)
-      new CompilationUnitAdapter(getClassFile().asInstanceOf[ScalaClassFile])
-    else
-      null
-  }
 }
 
 trait ScalaFieldElement extends ScalaElement

@@ -130,11 +130,6 @@ public privileged aspect ClassFileProviderAspect {
     target(stc) &&
     args(sourceTypes, compilationResult);
   
-  pointcut getAncestor(JavaElement je, int ancestorType) :
-    execution(IJavaElement JavaElement.getAncestor(int)) &&
-    target(je) &&
-    args(ancestorType);
-  
   pointcut isContainerDirty(TypeNameMatch match) :
     execution(boolean OpenTypeHistory.isContainerDirty(TypeNameMatch)) &&
     args(match);
@@ -373,19 +368,6 @@ public privileged aspect ClassFileProviderAspect {
     } catch (SourceTypeConverter.AnonymousMemberFound e) {
       return new Parser(stc.problemReporter, true).parse(stc.cu, compilationResult);
     }
-  }
-  
-  IJavaElement around(JavaElement je, int ancestorType) :
-    getAncestor(je, ancestorType) {
-    IJavaElement element = je;
-    while (element != null) {
-      if (element.getElementType() == ancestorType)
-        return element;
-      else if (element instanceof IScalaClassFile && ancestorType == IJavaElement.COMPILATION_UNIT)
-        return ((JavaElement)element).getCompilationUnit();
-      element= element.getParent();
-    }
-    return null;
   }
 
   boolean around(TypeNameMatch match) :

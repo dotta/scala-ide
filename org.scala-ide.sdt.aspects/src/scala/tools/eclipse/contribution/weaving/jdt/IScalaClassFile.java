@@ -5,6 +5,6 @@
 
 package scala.tools.eclipse.contribution.weaving.jdt;
 
-public interface IScalaClassFile extends IScalaCompilationUnit {
+public interface IScalaClassFile {
   public String getSourceFileName();
 }

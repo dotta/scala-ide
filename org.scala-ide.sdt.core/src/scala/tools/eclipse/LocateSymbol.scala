@@ -20,6 +20,7 @@ import scala.tools.nsc.io.AbstractFile
 import javaelements.{ScalaSourceFile, ScalaClassFile}
 import org.eclipse.core.runtime.IPath
 import scala.tools.eclipse.sourcefileprovider.SourceFileProviderRegistry
+import scala.tools.nsc.io.VirtualFile
 
 trait LocateSymbol { self : ScalaPresentationCompiler => 
 
@@ -75,11 +76,16 @@ trait LocateSymbol { self : ScalaPresentationCompiler =>
     
     val sourceFile = findSourceFile()
     
-    val target = 
-      if(sourceFile.isDefined) 
-        SourceFileProviderRegistry.getProvider(sourceFile.get).createFrom(sourceFile.get)
-      else 
-        findClassFile()
+    val sourcePath: Option[IPath] = sourceFile orElse {
+      findClassFile map { classFile =>
+        new Path(classFile.getPackageFragmentRoot().getSourceAttachmentPath().toString + "|" + classFile.getSourceFilePath.toString)
+      }
+    }
+    
+    val target = sourcePath flatMap  {path => 
+      val provider = SourceFileProviderRegistry.getProvider(path)
+      provider.createFrom(path)
+    }
     
     target flatMap { file =>
       val pos = if (sym.pos eq NoPosition) {
