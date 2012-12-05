@@ -76,16 +76,31 @@ trait LocateSymbol { self : ScalaPresentationCompiler =>
     
     val sourceFile = findSourceFile()
     
-    val sourcePath: Option[IPath] = sourceFile orElse {
-      findClassFile map { classFile =>
-        new Path(classFile.getPackageFragmentRoot().getSourceAttachmentPath().toString + "|" + classFile.getSourceFilePath.toString)
-      }
+    val target = sourceFile match {
+        case Some(path) => 
+          SourceFileProviderRegistry.getProvider(path).createFrom(path)
+        case None =>
+          findClassFile map { classFile =>
+            new scala.tools.eclipse.BaseCompilationUnit {
+              override lazy val scalaProject = scu.scalaProject
+              override lazy val file : AbstractFile = {
+                val path = classFile.getPackageFragmentRoot().getSourceAttachmentPath() append classFile.getSourceFilePath
+                new VirtualFile(classFile.getSourceFileName, path.toOSString())
+              }
+            }
+          }
     }
     
-    val target = sourcePath flatMap  {path => 
-      val provider = SourceFileProviderRegistry.getProvider(path)
-      provider.createFrom(path)
-    }
+//    orElse {
+//      findClassFile map { classFile =>
+//        new Path(classFile.getPackageFragmentRoot().getSourceAttachmentPath().toString + "|" + classFile.getSourceFilePath.toString)
+//      }
+//    }
+//    
+//    val target = sourcePath flatMap  {path => 
+//      val provider = SourceFileProviderRegistry.getProvider(path)
+//      provider.createFrom(path)
+//    }
     
     target flatMap { file =>
       val pos = if (sym.pos eq NoPosition) {
