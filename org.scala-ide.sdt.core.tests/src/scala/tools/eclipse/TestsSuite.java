@@ -15,6 +15,7 @@ import scala.tools.eclipse.launching.MainClassVerifierTest;
 import scala.tools.eclipse.lexical.LexicalTestsSuite;
 import scala.tools.eclipse.lexical.ScalaDocumentPartitionerTest;
 import scala.tools.eclipse.occurrences.OccurrencesFinderTest;
+import scala.tools.eclipse.pc.ContinuationsPluginTest;
 import scala.tools.eclipse.pc.PresentationCompilerRefreshTest;
 import scala.tools.eclipse.pc.PresentationCompilerTest;
 import scala.tools.eclipse.sbtbuilder.MultipleErrorsTest;
@@ -45,6 +46,7 @@ import scala.tools.eclipse.wizards.QualifiedNameSupportTest;
   ClasspathTests.class,
   CompilerSettingsTest.class,
   ContinuationPluginSettingsTest.class,
+  ContinuationsPluginTest.class,
   CompletionTests.class,
   RunAsTest.class,
   // ScalaJavaCompletionTests.class, FIXME: Uncomment as soon as this regression is fixed.

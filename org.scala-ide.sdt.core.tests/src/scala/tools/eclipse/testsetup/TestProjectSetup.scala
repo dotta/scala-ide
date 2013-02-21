@@ -70,7 +70,7 @@ class TestProjectSetup(projectName: String, srcRoot: String = "/%s/src/", val bu
 
   def createSourceFile(packageName: String, unitName: String)(contents: String): ScalaSourceFile = {
     val pack = SDTTestUtils.createSourcePackage(packageName)(project)
-    new scala.tools.eclipse.EclipseUserSimulator().createCompilationUnit(pack, unitName, contents).asInstanceOf[ScalaSourceFile]
+    new scala.tools.eclipse.EclipseUserSimulator().createCompilationUnit(pack, unitName, contents.stripMargin).asInstanceOf[ScalaSourceFile]
   }
   
   def reload(unit: ScalaCompilationUnit) {

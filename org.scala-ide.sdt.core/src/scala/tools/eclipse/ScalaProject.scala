@@ -96,7 +96,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   private val presentationCompiler = new Cached[Option[ScalaPresentationCompiler]] {
     override def create() = {
       try {
-        val settings = ScalaPlugin.defaultScalaSettings
+        val settings = ScalaPlugin.defaultScalaSettings()
         settings.printtypes.tryToSet(Nil)
         initializeCompilerSettings(settings, isPCSetting(settings))
         val pc = new ScalaPresentationCompiler(ScalaProject.this, settings)
@@ -444,8 +444,9 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
       value <- Trim(currentStorage.getString(SettingConverterUtil.convertNameToProperty(setting.name)))
     ) yield (setting, value)
   }
+
   def scalacArguments: Seq[String] = {
-    import ScalaPlugin.{defaultScalaSettings => settings}
+    val settings = ScalaPlugin.defaultScalaSettings()
     val encArgs = encoding.toSeq flatMap (Seq("-encoding", _))
     val shownArgs =
       for ((setting, value) <- shownSettings(settings, _ => true)) yield {
@@ -606,10 +607,10 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
 
   def buildManager: EclipseBuildManager = {
     if (buildManager0 == null) {
-      val settings = ScalaPlugin.defaultScalaSettings(msg => settingsError(IMarker.SEVERITY_ERROR, msg, null))
+      val settings = ScalaPlugin.defaultScalaSettings(settingsError(IMarker.SEVERITY_ERROR, _, null))
       clearSettingsErrors()
       initializeCompilerSettings(settings, _ => true)
-      // source path should be emtpy. The build manager decides what files get recompiled when.
+      // source path should be empty. The build manager decides what files get recompiled when.
       // if scalac finds a source file newer than its corresponding classfile, it will 'compileLate'
       // that file, using an AbstractFile/PlainFile instead of the EclipseResource instance. This later
       // causes problems if errors are reported against that file. Anyway, it's wrong to have a sourcepath

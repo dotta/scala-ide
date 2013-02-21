@@ -103,7 +103,7 @@ class CompilerSettings extends PropertyPage with IWorkbenchPreferencePage with E
 
   import EclipseSetting.toEclipseBox
   /** The settings we can change */
-  lazy val userBoxes = IDESettings.shownSettings(ScalaPlugin.defaultScalaSettings) ++ IDESettings.buildManagerSettings
+  lazy val userBoxes = IDESettings.shownSettings(ScalaPlugin.defaultScalaSettings()) ++ IDESettings.buildManagerSettings
   lazy val eclipseBoxes = userBoxes.map { s => toEclipseBox(s, preferenceStore0) }
 
   /** Pulls the preference store associated with this plugin */
@@ -375,7 +375,7 @@ class CompilerSettings extends PropertyPage with IWorkbenchPreferencePage with E
         updateApplyButton()
       }
 
-      val settings = ScalaPlugin.defaultScalaSettings
+      val settings = ScalaPlugin.defaultScalaSettings()
       val proposals = settings.visibleSettings.map(_.name)
 
       val provider = new IContentProposalProvider {

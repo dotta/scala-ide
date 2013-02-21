@@ -38,8 +38,9 @@ import scala.tools.eclipse.logging.PluginLogConfigurator
 import scala.tools.eclipse.util.Trim
 import scala.tools.nsc.Settings
 import scala.tools.eclipse.ui.PartAdapter
+import org.eclipse.core.runtime.Preferences
 
-object ScalaPlugin {
+object ScalaPlugin extends HasLogger {
   final val IssueTracker = "https://www.assembla.com/spaces/scala-ide/support/tickets"
   
   private final val HeadlessTest  = "sdtcore.headless"
@@ -55,21 +56,11 @@ object ScalaPlugin {
   }
   
   def getShell: Shell = getWorkbenchWindow map (_.getShell) orNull
-  
-  def defaultScalaSettings : Settings = defaultScalaSettings(Console.println)
-  
-  def defaultScalaSettings(errorFn: String => Unit): Settings = new Settings(errorFn) {
-    // [dotta]:
-    // Passing a default location for pluginsDir does not play nicely with the SBT builder for some 
-    // reason which I currently fail to understand. The workaround is hence to set the default location 
-    // of plugins only when the user clicks on the "Use Project Settings" checkbox (located in the Scala 
-    // Compiler Preferences); have a look at CompilerSettings.scala to see the dirty hack in action.
-    // 
-    // The issue I refer to seem to arise only when a user tries to enable the continuations plugin 
-    // by explicitly passing the location of the continuations.jar via the -Xplugin setting (and 
-    // -Xpluginsdir is given no value). By the way, the mentioned issue only shows up with the SBT builder, 
-    // with the Refined Build Manager it all works as expected.
-    override val pluginsDir = StringSetting("-Xpluginsdir", "path", "Path to search compiler plugins.", "")
+
+   def defaultScalaSettings(errorFn: String => Unit = Console.println): Settings = {
+    new Settings(errorFn) {
+      override val pluginsDir = StringSetting("-Xpluginsdir", "path", "Path to search compiler plugins.", "")
+    }
   }
 }
 
@@ -275,7 +266,7 @@ class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IReso
       }
     }
   }
-  
+
   override def elementChanged(event: ElementChangedEvent) {
     import scala.collection.mutable.ListBuffer
     import IJavaElement._

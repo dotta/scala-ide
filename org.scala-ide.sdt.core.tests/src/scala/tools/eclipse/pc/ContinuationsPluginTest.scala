@@ -16,6 +16,8 @@ import org.junit.Assert
 import scala.tools.eclipse.testsetup.CustomAssertion
 import scala.tools.eclipse.javaelements.ScalaSourceFile
 import org.eclipse.jdt.core.IPackageFragment
+import org.eclipse.jdt.core.compiler.IProblem
+import org.mockito.Mockito._
 
 @RunWith(classOf[JUnit4])
 class ContinuationsPluginTest {
@@ -42,35 +44,77 @@ class ContinuationsPluginTest {
     SDTTestUtils.deleteProjects(project)
   }
 
-  private def sourcecode(pkg: IPackageFragment)(code: String): ScalaSourceFile = {
-    val testCode = code.stripMargin
-    val emptyPkg = simulator.createPackage("")
-    simulator.createCompilationUnit(emptyPkg, "A.scala", testCode).asInstanceOf[ScalaSourceFile]
+  private def openAndWaitUntilTypechecked(source: ScalaSourceFile) {
+    val sourcePath = source.getPath()
+    val projectSrcPath = project.underlying.getFullPath() append "src"
+    val path = sourcePath.makeRelativeTo(projectSrcPath)
+    projectSetup.open(path.toOSString())
+    projectSetup.waitUntilTypechecked(source)
   }
 
   @Test
-  def foo() {
-    val emptyPkg = simulator.createPackage("")
-    val source = sourcecode(emptyPkg) {
+  def presentation_compiler_report_errors_when_continuations_plugin_is_not_enabled() {
+    val source = projectSetup.createSourceFile("nok", "Continuations.scala") {
       """
         |import scala.util.continuations.reset
         |import scala.util.continuations.shift
         |
         |object Continuations extends App {
-        |  reset {
+        |  val a: Int = reset {
         |    shift { k: (Int => Int) =>
         |      k(k(k(7)))
         |    } + 1
-        |  } * 2 // result 20 
+        |  }
+        |  println(a * 2) // result 20
         |}
       """
     }
-    
-    val path = source.getPath().makeRelativeTo(project.sourceFolders.head)
-    val raw = path.toOSString()
-    projectSetup.open(path.toOSString())
-    projectSetup.waitUntilTypechecked(source)
+
+    openAndWaitUntilTypechecked(source)
+
+    projectSetup.assertFoundErrors(source) {
+      "Pb(0) this code must be compiled with the Scala continuations plugin enabled"
+    }
+  }
+
+  @Test
+  def presentation_compiler_does_not_report_errors_when_continuations_plugin_is_enabled(): Unit = withContinuationPluginEnabled {
+    projectSetup
+    val source = projectSetup.createSourceFile("ok", "Continuations.scala") {
+      """
+        |import scala.util.continuations.reset
+        |import scala.util.continuations.shift
+        |
+        |object Continuations extends App {
+        |  val a: Int = reset {
+        |    shift { k: (Int => Int) =>
+        |      k(k(k(7)))
+        |    } + 1
+        |  }
+        |  println(a * 2) // result 20
+        |}
+      """
+    }
+
+    openAndWaitUntilTypechecked(source)
 
     projectSetup.assertNoErrors(source)
   }
-}	
+
+  private def withContinuationPluginEnabled(body: => Unit) {
+    val value = project.storage.getString("P")
+    try {
+      project.storage.setValue("P", "continuations:enable")
+      body
+    }
+    finally {
+      project.storage.setValue("P", value)
+    }
+  }
+
+  implicit def string2problem(problemMessage: String): IProblem = {
+    val problem = mock(classOf[IProblem])
+    when(problem.toString).thenReturn(problemMessage)
+    problem
+  }
+}
