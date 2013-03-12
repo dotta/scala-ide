@@ -109,6 +109,18 @@ object TextPresentationEditorHighlighter {
     }
 
     override def propertyChange(event: PropertyChangeEvent): Unit = {
+      if(event.getProperty.equals(ScalaSyntaxClasses.STRIKETHROUGH_DEPRECATED))
+        strikethroughPreferenceChanged(event)
+      else handleSemanticCategoryPropertyChange(event)
+    }
+    
+    private def strikethroughPreferenceChanged(event: PropertyChangeEvent): Unit = {
+      println(event.getProperty())
+      println(event.getOldValue())
+      println(event.getNewValue())
+    }
+    
+    private def handleSemanticCategoryPropertyChange(event: PropertyChangeEvent): Unit = {
       for {
         semanticCategory <- ScalaSyntaxClasses.scalaSemanticCategory.children
         if event.getProperty().startsWith(semanticCategory.baseName)
