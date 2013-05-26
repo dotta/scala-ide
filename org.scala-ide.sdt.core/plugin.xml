@@ -390,7 +390,40 @@
       <super type="org.eclipse.jdt.core.problem"/>
       <persistent value="true"/>
    </extension>
-   
+
+   <extension
+         id="sourceLocationProblem"
+         name="Scala Source Location Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+      <attribute
+            name="severity">
+      </attribute>
+      <attribute
+            name="message">
+      </attribute>
+      <attribute
+            name="location">
+      </attribute>
+   </extension>
+
+   <!--<extension
+         id="marker"
+         name="%markerName"
+         point="org.eclipse.core.resources.markers">
+      <attribute
+            name="transient">
+      </attribute>
+      <attribute
+            name="generatedBy">
+      </attribute>
+   </extension>-->
+
    <extension
          id="settingProblem"
          name="Scala Setting Problem"

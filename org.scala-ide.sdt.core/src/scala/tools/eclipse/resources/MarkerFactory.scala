@@ -28,7 +28,7 @@ object MarkerFactory {
   *
   * {{{ class BuildProblemMarker extends MarkerFactory("org.scala-ide.sdt.core.problem") }}}
   */
-abstract class MarkerFactory(markerType: String) {
+abstract class MarkerFactory(protected val markerType: String) {
   /** Create marker without a source position in the Problem view.
     * @param resource The resource to use to create the marker (hence, the marker will be associated to the passed resource)
     * @param severity Indicates the marker's error state. Its value can be one of:

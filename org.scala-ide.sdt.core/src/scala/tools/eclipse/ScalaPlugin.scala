@@ -109,6 +109,7 @@ class ScalaPlugin extends AbstractUIPlugin with PluginLogConfigurator with IReso
   def problemMarkerId = pluginId + ".problem"
   def classpathProblemMarkerId = pluginId + ".classpathProblem"
   def settingProblemMarkerId = pluginId + ".settingProblem"
+  def sourceLocationProblemMarkerId = pluginId + ".sourceLocationProblem"
   def taskMarkerId = pluginId + ".task"
 
   /** All Scala error markers. */

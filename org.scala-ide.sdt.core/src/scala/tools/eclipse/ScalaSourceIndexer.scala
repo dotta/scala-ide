@@ -25,6 +25,7 @@ class ScalaSourceIndexer(document : SearchDocument) extends AbstractIndexer(docu
 
   override def indexDocument() {
     logger.info("Indexing document: "+document.getPath)
+    
     source.map(_.addToIndexer(this))
   }
   
@@ -46,22 +47,33 @@ class ScalaSourceIndexer(document : SearchDocument) extends AbstractIndexer(docu
       val currentPackageName = packageName.mkString
       if(currentPackageName != expectedPackageName) {
         val message = s"Package name of source ${relativePath.toOSString()} doesn't match filesystem location"
-        BuildProblemMarker.create(source.get.getResource(), IMarker.SEVERITY_WARNING, message)
+        ScalaSourceIndexer.SourceLocationProblemMarker.create(source.get.getResource(), message)
       }
     }
   }
   
-  // copied from `org.eclipse.jdt.internal.core.index.Index.containerRelativePath`
+  // @see [[org.eclipse.jdt.internal.core.index.Index.containerRelativePath]]
   private def containerRelativePath(documentPath: String): String = {
-    val index = documentPath.indexOf(IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR);
-    val p1= source.get.getResource().getProjectRelativePath()
-    val p2= source.get.file.path
-//    if (index == -1) {
-//        scalaProject.underlying.getProjectRelativePath() 
-//        index = this.containerPath.length();
-//        if (documentPath.length() <= index)
-//            throw new IllegalArgumentException("Document path " + documentPath + " must be relative to " + this.containerPath); //$NON-NLS-1$ //$NON-NLS-2$
-//    }
-    documentPath.substring(index + 1);
+    var index = documentPath.indexOf(IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR)
+    documentPath.substring(index + 1)
+  }
+}
+
+
+object ScalaSourceIndexer {
+  import org.eclipse.core.internal.resources.ResourceException
+  import org.eclipse.core.resources.IResource
+  import scala.tools.eclipse.resources.MarkerFactory
+
+  object SourceLocationProblemMarker extends MarkerFactory(ScalaPlugin.plugin.sourceLocationProblemMarkerId) {
+    def create(resource: IResource, msg: String): Unit = create(resource, IMarker.SEVERITY_WARNING, msg)
+    
+    def delete(resource: IResource): Unit = {
+      try {
+      resource.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE)
+    } catch {
+      case _ : ResourceException =>
+    }
+    }
   }
 }
