@@ -373,7 +373,6 @@ abstract class AbstractNewElementWizardPage extends NewTypeWizardPage(1, "") wit
     }
 
     def superTypes: List[String] = {
-      import scala.collection.JavaConversions._
       val javaArrayList = getSuperInterfaces
       val jual = javaArrayList.toArray(new Array[String](javaArrayList.size))
       (getSuperClass +: jual).toList
@@ -519,7 +518,7 @@ abstract class AbstractNewElementWizardPage extends NewTypeWizardPage(1, "") wit
 
   override protected def typeNameChanged(): IStatus = {
 
-    var status = super.typeNameChanged.asInstanceOf[StatusInfo]
+    val status = super.typeNameChanged.asInstanceOf[StatusInfo]
     logger.info(">>>> Status = " + status)
     val pack = getPackageFragment
 
@@ -560,4 +559,12 @@ abstract class AbstractNewElementWizardPage extends NewTypeWizardPage(1, "") wit
   def isDefaultPackage = getPackageText() == ""
 
   def getFullyQualifiedName = if (isDefaultPackage) getTypeNameWithoutParameters else getPackageText() + "." + getTypeNameWithoutParameters
+
+  protected def initializeIfNotNull(dialogSettings: IDialogSettings)(f: IDialogSettings => Unit) {
+    if (dialogSettings != null) {
+      val section = dialogSettings.getSection(PAGE_NAME)
+      if (section != null)
+        f(section)
+    }
+  }
 }

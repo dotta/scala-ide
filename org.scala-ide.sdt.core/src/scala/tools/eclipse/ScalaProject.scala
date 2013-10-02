@@ -97,7 +97,6 @@ object ScalaProject {
 class ScalaProject private (val underlying: IProject) extends ClasspathManagement with HasLogger {
   import ScalaPlugin.plugin
 
-  private var classpathUpdate: Long = IResource.NULL_STAMP
   private var buildManager0: EclipseBuildManager = null
   private var hasBeenBuilt = false
 
@@ -435,7 +434,7 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
         binFolder.refreshLocal(IResource.DEPTH_INFINITE, null)
         // make sure the folder is marked as Derived, so we don't see classfiles in Open Resource
         // but don't set it unless necessary (this might be an expensive operation)
-        if (!binFolder.isDerived)
+        if (!binFolder.isDerived && binFolder.exists)
           binFolder.setDerived(true, null)
     }
   }
@@ -673,9 +672,6 @@ class ScalaProject private (val underlying: IProject) extends ClasspathManagemen
   def prepareBuild(): Boolean = if (!hasBeenBuilt) buildManager.invalidateAfterLoad else false
 
   def build(addedOrUpdated: Set[IFile], removed: Set[IFile], monitor: SubMonitor) {
-    if (addedOrUpdated.isEmpty && removed.isEmpty)
-      return
-
     hasBeenBuilt = true
 
     clearBuildProblemMarker()
