@@ -32,7 +32,7 @@ import scala.tools.eclipse.util.EclipseResource
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.nsc.util.FailedInterrupt
 import scala.tools.nsc.symtab.Flags
-import scala.tools.eclipse.completion.CompletionProposal
+import scala.tools.eclipse.completion.CompletionInfo
 import org.eclipse.jdt.core.IMethod
 import scala.tools.nsc.io.VirtualFile
 import scala.tools.nsc.interactive.MissingResponse
@@ -269,8 +269,7 @@ class ScalaPresentationCompiler(project: ScalaProject, settings: Settings) exten
    *  TODO We should have a more refined strategy based on the context (inside an import, case
    *       pattern, 'new' call, etc.)
    */
-  def mkCompletionProposal(prefix: Array[Char], start: Int, sym: Symbol, tpe: Type,
-    inherited: Boolean, viaView: Symbol, context: CompletionContext): CompletionProposal = {
+  def mkCompletionProposal(prefix: Array[Char], start: Int, sym: Symbol, tpe: Type, inherited: Boolean, viaView: Symbol, context: CompletionContext): CompletionInfo = {
     import scala.tools.eclipse.completion.MemberKind._
 
     val kind = if (sym.isSourceMethod && !sym.hasFlag(Flags.ACCESSOR | Flags.PARAMACCESSOR)) Def
@@ -325,7 +324,7 @@ class ScalaPresentationCompiler(project: ScalaProject, settings: Settings) exten
       } else scalaParamNames
     }
 
-    CompletionProposal(
+    CompletionInfo(
       kind,
       context,
       start,

@@ -1,34 +1,5 @@
 package scala.tools.eclipse.completion
 
-object HasArgs extends Enumeration {
-  val NoArgs, EmptyArgs, NonEmptyArgs = Value
-
-  /** Given a list of method's parameters it tells if the method
-   * arguments should be adorned with parenthesis. */
-  def from(params: List[List[_]]) = params match {
-    case Nil => NoArgs
-    case Nil :: Nil => EmptyArgs
-    case _ => NonEmptyArgs
-  }
-}
-
-/** Context related to the invocation of the Completion.
- *  Can be extended with more context as needed in future
- *
- *  @param contextType The type of completion - e.g. Import, method apply
- *  */
-case class CompletionContext(
-  contextType: CompletionContext.ContextType
-)
-
-object CompletionContext {
-  trait ContextType
-  case object DefaultContext extends ContextType
-  case object ApplyContext extends ContextType
-  case object ImportContext extends ContextType
-}
-
-
 /** A completion proposal coming from the Scala compiler. This
  *  class holds together data about completion proposals.
  *
@@ -39,7 +10,7 @@ object CompletionContext {
  *  @note Parameter names are retrieved lazily, since the operation is potentially long-running.
  *  @see  ticket #1001560
  */
-case class CompletionProposal(
+case class CompletionInfo(
   kind: MemberKind.Value,
   context: CompletionContext,
   startPos: Int,             // position where the 'completion' string should be inserted
@@ -62,9 +33,4 @@ case class CompletionProposal(
 
     contextInfo.map(_.mkString("(", ", ", ")")).mkString("")
   }
-}
-
-/** The kind of a completion proposal. */
-object MemberKind extends Enumeration {
-  val Class, Trait, Type, Object, Package, PackageObject, Def, Val, Var = Value
 }

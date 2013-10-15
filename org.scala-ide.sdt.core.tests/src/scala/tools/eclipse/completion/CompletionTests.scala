@@ -28,7 +28,7 @@ class CompletionTests {
   import org.eclipse.jface.text.IDocument
   import org.eclipse.jdt.ui.text.java.ContentAssistInvocationContext
 
-  private def withCompletions(path2source: String)(body: (Int, OffsetPosition, List[CompletionProposal]) => Unit) {
+  private def withCompletions(path2source: String)(body: (Int, OffsetPosition, List[CompletionInfo]) => Unit) {
     val unit = compilationUnit(path2source).asInstanceOf[ScalaCompilationUnit]
 
     // first, 'open' the file by telling the compiler to load it
@@ -234,7 +234,7 @@ class CompletionTests {
         assertEquals("There is only one completion location", 0, index)
         assertTrue("The completion should return java.util", completions.exists(
           _ match {
-            case CompletionProposal(MemberKind.Package, _, _, "util", _, _, _, _, _, _, _, _) =>
+            case CompletionInfo(MemberKind.Package, _, _, "util", _, _, _, _, _, _, _, _) =>
               true
             case _ =>
               false
@@ -266,12 +266,12 @@ class CompletionTests {
         index match {
         case 0 =>
           assertTrue("The completion should return the `buz` method name with empty-parens", completions.exists {
-            case CompletionProposal(MemberKind.Def, _, _, "buz", _, _, _, _, getParamNames, _, _, _) =>
+            case CompletionInfo(MemberKind.Def, _, _, "buz", _, _, _, _, getParamNames, _, _, _) =>
               getParamNames() == List(Nil) // List(Nil) is how an empty-args list is encoded
         })
         case 1 =>
           assertTrue("The completion should return the `bar` method name with NO empty-parens", completions.exists {
-            case CompletionProposal(MemberKind.Def, _, _, "bar", _, _, _, _, getParamNames, _, _, _) =>
+            case CompletionInfo(MemberKind.Def, _, _, "bar", _, _, _, _, getParamNames, _, _, _) =>
               getParamNames() == Nil
           })
         case _ =>
@@ -300,7 +300,7 @@ class CompletionTests {
         assertEquals("There is only one completion location", 1, completions.size)
         assertTrue("The completion should return doNothingWith", completions.exists(
           _ match {
-            case c @ CompletionProposal(MemberKind.Def, CompletionContext(CompletionContext.ImportContext), _, "doNothingWith", _, _, _, _, _, _, _, _) =>
+            case c @ CompletionInfo(MemberKind.Def, CompletionContext(_, CompletionContext.ImportContext), _, "doNothingWith", _, _, _, _, _, _, _, _) =>
               true
             case _ =>
               false
@@ -316,7 +316,7 @@ class CompletionTests {
         assertEquals("There is only one completion location", 1, completions.size)
         assertTrue("The completion should return doNothingWith", completions.exists(
           _ match {
-            case c @ CompletionProposal(MemberKind.Def, CompletionContext(CompletionContext.ImportContext), _, "doNothingWith", _, _, _, _, _, _, _, _) =>
+            case c @ CompletionInfo(MemberKind.Def, CompletionContext(_, CompletionContext.ImportContext), _, "doNothingWith", _, _, _, _, _, _, _, _) =>
               true
             case _ =>
               false

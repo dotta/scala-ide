@@ -121,7 +121,7 @@ class ScalaJavaCompletionProposalComputer extends IJavaCompletionProposalCompute
       compiler.askOption { () =>
         val currentClass = rootMirror.getClassByName(newTypeName(referencedTypeName))
         val proposals = currentClass.info.members.filter(mixedInMethod).toList
-        val defaultContext = CompletionContext(CompletionContext.DefaultContext)
+        val defaultContext = CompletionContext(invocationOffset, CompletionContext.DefaultContext)
 
         for (sym <- proposals if sym.name.startsWith(prefix)) yield {
           val prop = compiler.mkCompletionProposal(prefix.toCharArray, start, sym = sym,
