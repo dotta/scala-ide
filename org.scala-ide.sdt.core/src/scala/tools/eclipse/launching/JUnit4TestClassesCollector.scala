@@ -1,7 +1,7 @@
 package scala.tools.eclipse.launching
 
 import scala.collection.mutable.ListBuffer
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.nsc.MissingRequirementError
 

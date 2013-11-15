@@ -10,7 +10,7 @@ import org.eclipse.core.resources.IFile
 import scala.tools.nsc.symtab.Flags
 
 import scala.tools.eclipse.ScalaPlugin
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.ScalaSourceIndexer
 import scala.tools.eclipse.SettingConverterUtil
 import scala.tools.eclipse.properties.ScalaPluginSettings

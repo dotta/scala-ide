@@ -4,7 +4,7 @@ import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.eclipse.ui.texteditor.ITextEditor
 
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 
 private class ImplicitHyperlinkDetector extends BaseHyperlinkDetector {
 

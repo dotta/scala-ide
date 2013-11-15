@@ -7,8 +7,7 @@ package scala.tools.eclipse
 package ui
 
 import scala.collection.mutable
-import completion.ScalaCompletions
-
+import org.scalaide.core.internal.completion.ScalaCompletions
 import org.eclipse.jface.viewers.ISelectionProvider
 import org.eclipse.jface.text.TextSelection
 import org.eclipse.jface.text.contentassist.ICompletionProposal
@@ -27,6 +26,7 @@ import org.eclipse.jface.text.IDocument
 import scala.tools.nsc.symtab.Flags
 import scala.reflect.internal.util.SourceFile
 import javaelements.ScalaCompilationUnit
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 
 class ScalaCompletionProposalComputer extends ScalaCompletions with IJavaCompletionProposalComputer {
   def sessionStarted() {}

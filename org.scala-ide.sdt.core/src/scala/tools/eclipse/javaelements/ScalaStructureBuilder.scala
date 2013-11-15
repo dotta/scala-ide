@@ -37,7 +37,7 @@ import scala.collection.mutable.HashMap
 import scala.tools.nsc.symtab.Flags
 import scala.tools.nsc.util.NoPosition
 import scala.tools.nsc.util.Position
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.util.ReflectionUtils
 
 trait ScalaStructureBuilder extends ScalaAnnotationHelper { pc : ScalaPresentationCompiler =>

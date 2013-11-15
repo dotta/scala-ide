@@ -6,7 +6,7 @@ import scala.tools.eclipse.properties.ImplicitsPreferencePage._
 import scala.tools.eclipse.util.EclipseUtils
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.eclipse.ScalaPlugin
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.reflect.internal.util.SourceFile
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.jdt.core.WorkingCopyOwner
@@ -30,6 +30,7 @@ import scala.tools.eclipse.semantic.SemanticAction
 import scala.tools.eclipse.properties.ImplicitsPreferencePage
 import org.eclipse.jface.text.Region
 import scala.tools.eclipse.hyperlink.text._
+import org.scalaide.core.hyperlink.HyperlinkFactory
 
 
 /**

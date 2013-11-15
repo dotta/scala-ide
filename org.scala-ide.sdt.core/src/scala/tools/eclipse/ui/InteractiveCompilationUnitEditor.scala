@@ -1,6 +1,6 @@
 package scala.tools.eclipse.ui
 
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 
 trait InteractiveCompilationUnitEditor {
   def getInteractiveCompilationUnit(): InteractiveCompilationUnit

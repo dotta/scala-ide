@@ -6,7 +6,7 @@ package scala.tools.eclipse
 package refactoring
 
 import scala.tools.eclipse.ISourceViewerEditor
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 import scala.tools.eclipse.javaelements.ScalaSourceFile
 import scala.tools.eclipse.util.EditorUtils
 import scala.tools.nsc.io.AbstractFile

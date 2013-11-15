@@ -44,7 +44,7 @@ import scala.tools.nsc.CompilerCommand
 import org.eclipse.jface.fieldassist._
 import org.eclipse.jface.bindings.keys.KeyStroke
 import scala.tools.eclipse.logging.HasLogger
-import scala.tools.eclipse.buildmanager.ProjectsCleanJob
+import org.scalaide.core.internal.builder.ProjectsCleanJob
 
 trait ScalaPluginPreferencePage extends HasLogger {
   self: PreferencePage with EclipseSettings =>

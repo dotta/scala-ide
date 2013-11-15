@@ -6,7 +6,6 @@
 package scala.tools.eclipse
 
 import java.io.File.pathSeparator
-
 import scala.collection.immutable
 import scala.collection.mutable
 import scala.reflect.internal.util.SourceFile
@@ -19,7 +18,6 @@ import scala.tools.eclipse.ui.PartAdapter
 import scala.tools.eclipse.util.EclipseResource
 import scala.tools.eclipse.util.Trim
 import scala.tools.nsc.Settings
-
 import org.eclipse.core.resources.IContainer
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IMarker
@@ -42,6 +40,10 @@ import org.eclipse.ui.IEditorPart
 import org.eclipse.ui.IPartListener
 import org.eclipse.ui.IWorkbenchPart
 import org.eclipse.ui.part.FileEditorInput
+import org.scalaide.core.internal.builder.EclipseBuildManager
+import org.scalaide.core.compiler.InteractiveCompilationUnit
+import org.scalaide.core.compiler.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompilerProxy
 
 trait BuildSuccessListener {
   def buildSuccessful(): Unit

@@ -3,11 +3,12 @@ package scala.tools.eclipse.hyperlink.text.detector
 
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
-import scala.tools.eclipse.{ScalaPresentationCompiler => compiler}
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.eclipse.hyperlink.text._
-import scala.tools.eclipse.InteractiveCompilationUnit
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.InteractiveCompilationUnit
+import org.scalaide.core.compiler.ScalaPresentationCompiler
+import org.scalaide.core.hyperlink.HyperlinkFactory
 
 class ScalaDeclarationHyperlinkComputer extends HasLogger {
   def findHyperlinks(icu: InteractiveCompilationUnit, wordRegion: IRegion): Option[List[IHyperlink]] = {

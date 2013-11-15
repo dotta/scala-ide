@@ -1,7 +1,7 @@
 package scala.tools.eclipse.semantichighlighting.classifier
 import scala.PartialFunction.condOpt
 import scala.collection.mutable
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.logging.HasLogger
 import scala.tools.eclipse.semantichighlighting.classifier.SymbolTypes._
 import scala.tools.nsc.io.AbstractFile

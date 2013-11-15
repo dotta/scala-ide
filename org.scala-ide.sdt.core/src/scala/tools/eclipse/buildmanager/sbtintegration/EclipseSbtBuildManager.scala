@@ -33,6 +33,9 @@ import sbt.compiler.CompileFailed
 import org.eclipse.core.resources.IProject
 import java.lang.ref.SoftReference
 import java.util.concurrent.atomic.AtomicReference
+import org.scalaide.core.internal.builder.EclipseBuildManager
+import org.scalaide.core.internal.builder.BuildProblemMarker
+import org.scalaide.core.internal.builder.BuildReporter
 
 /** An Eclipse builder using the Sbt engine.
  *

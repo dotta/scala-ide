@@ -4,7 +4,7 @@ import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
 
 import scala.collection.immutable
 import scala.reflect.internal.Chars
-import scala.tools.eclipse.compiler.Token
+import org.scalaide.core.compiler.Token
 import scala.tools.eclipse.javaelements.ScalaSourceFile
 import scala.tools.nsc.ast.parser.Tokens
 

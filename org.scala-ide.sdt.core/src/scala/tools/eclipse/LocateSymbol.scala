@@ -28,6 +28,8 @@ import javaelements.ScalaSourceFile
 import javaelements.ScalaClassFile
 import org.eclipse.core.runtime.IPath
 import scala.tools.eclipse.sourcefileprovider.SourceFileProviderRegistry
+import org.scalaide.core.compiler.InteractiveCompilationUnit
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 
 trait LocateSymbol { self : ScalaPresentationCompiler =>
 

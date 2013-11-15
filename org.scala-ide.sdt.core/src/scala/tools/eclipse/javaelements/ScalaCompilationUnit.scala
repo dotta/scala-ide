@@ -45,7 +45,7 @@ import scala.tools.eclipse.contribution.weaving.jdt.IScalaCompilationUnit
 import scala.tools.eclipse.contribution.weaving.jdt.IScalaWordFinder
 import scala.tools.eclipse.ScalaImages
 import scala.tools.eclipse.ScalaPlugin
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.ScalaSourceIndexer
 import scala.tools.eclipse.ScalaWordFinder
 import scala.tools.eclipse.util.ReflectionUtils
@@ -59,6 +59,7 @@ import scala.tools.eclipse.hyperlink.text.detector.DeclarationHyperlinkDetector
 import org.eclipse.ui.texteditor.ITextEditor
 import scala.tools.eclipse.hyperlink.text.detector.BaseHyperlinkDetector
 import scala.tools.eclipse.util.EditorUtils
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 
 trait ScalaCompilationUnit extends Openable
   with env.ICompilationUnit

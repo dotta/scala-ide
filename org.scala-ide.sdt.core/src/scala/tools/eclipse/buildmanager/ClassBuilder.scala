@@ -3,7 +3,7 @@ package scala.tools.eclipse.buildmanager
 import scala.tools.eclipse.GeneralScalaJavaBuilder
 import scala.tools.eclipse.ScalaJavaBuilderUtils
 import scala.tools.eclipse.ScalaPlugin
-import scala.tools.eclipse.StateUtils
+import org.scalaide.core.internal.builder.StateUtils
 import scala.tools.eclipse.javaelements.JDTUtils
 
 import org.eclipse.core.resources.IProject

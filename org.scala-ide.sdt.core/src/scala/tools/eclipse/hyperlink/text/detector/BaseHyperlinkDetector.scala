@@ -5,7 +5,7 @@ import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector
 import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.eclipse.ui.texteditor.ITextEditor
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 import scala.tools.eclipse.util.EditorUtils
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.future

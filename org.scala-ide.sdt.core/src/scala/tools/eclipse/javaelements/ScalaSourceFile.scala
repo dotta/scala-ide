@@ -31,7 +31,7 @@ import org.eclipse.jdt.core.compiler.CharOperation
 import scala.tools.nsc.interactive.Response
 import scala.tools.eclipse.reconciliation.ReconciliationParticipantsExtensionPoint
 import org.eclipse.jdt.core.JavaModelException
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 import scala.tools.eclipse.sourcefileprovider.SourceFileProvider
 import org.eclipse.core.runtime.IPath
 

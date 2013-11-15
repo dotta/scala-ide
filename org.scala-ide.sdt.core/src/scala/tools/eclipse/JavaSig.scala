@@ -1,5 +1,7 @@
 package scala.tools.eclipse
 
+import org.scalaide.core.compiler.ScalaPresentationCompiler
+
 trait JavaSig { pc: ScalaPresentationCompiler =>
 
   /** Returns the symbol's `JavaSignature`*/

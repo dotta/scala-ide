@@ -7,7 +7,7 @@ package refactoring
 
 import scala.reflect.internal.util.SourceFile
 import scala.tools.eclipse.ScalaPlugin
-import scala.tools.eclipse.ScalaPresentationCompiler
+import org.scalaide.core.compiler.ScalaPresentationCompiler
 import scala.tools.eclipse.javaelements.ScalaSourceFile
 import scala.tools.eclipse.util.FileUtils
 import scala.tools.refactoring.MultiStageRefactoring

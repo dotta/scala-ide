@@ -1,7 +1,7 @@
 package scala.tools.eclipse.buildmanager.sbtintegration
 
 import scala.collection.mutable
-import scala.tools.eclipse.buildmanager.BuildReporter
+import org.scalaide.core.internal.builder.BuildReporter
 import scala.reflect.internal.util.BatchSourceFile
 import scala.reflect.internal.util.OffsetPosition
 import scala.reflect.internal.util.Position

@@ -11,11 +11,11 @@ import scala.tools.eclipse.ScalaWordFinder
 import scala.tools.eclipse.javaelements.ScalaSelectionEngine
 import scala.tools.eclipse.javaelements.ScalaSelectionRequestor
 import scala.tools.eclipse.logging.HasLogger
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 import org.eclipse.jdt.internal.core.JavaProject
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner
 import org.eclipse.jdt.internal.core.Openable
-import scala.tools.eclipse.InteractiveCompilationUnit
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 import org.eclipse.jdt.core.IJavaElement
 
 class DeclarationHyperlinkDetector extends BaseHyperlinkDetector with HasLogger {

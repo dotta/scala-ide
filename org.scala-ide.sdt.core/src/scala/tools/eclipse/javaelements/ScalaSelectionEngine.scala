@@ -23,6 +23,7 @@ import org.eclipse.jdt.internal.compiler.env.AccessRestriction
 import org.eclipse.jdt.internal.core.JavaElement
 import org.eclipse.jdt.internal.core.SearchableEnvironment
 import scala.tools.eclipse.logging.HasLogger
+import org.scalaide.core.compiler.InteractiveCompilationUnit
 
 class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: ScalaSelectionRequestor, settings: ju.Map[_, _]) extends Engine(settings) with ISearchRequestor with HasLogger {
 
